@@ -1,9 +1,12 @@
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Database {
@@ -51,31 +54,57 @@ public class Database {
 	    }
 	}
 
-    public void simpleQuery(String sqlQuery) {
+    public String[][] simpleQuery(String sqlQuery) {
+		ArrayList<String[]> list = new ArrayList<String[]>();
+		int columns = 0;
 	    try {
 	    	statement = connection.createStatement();
 	    	resultSet = statement.executeQuery(sqlQuery);
 
 	    	ResultSetMetaData metaData = resultSet.getMetaData();
-	    	int columns = metaData.getColumnCount();
+	    	columns = metaData.getColumnCount();
 
+			String[] temp = new String[columns];
 	    	for (int i=1; i<= columns; i++) {
-	    		System.out.print(metaData.getColumnName(i)+"\t");
+	    		temp[i-1] = metaData.getColumnName(i);
 	    	}
-
-	    	System.out.println();
+			list.add(temp);
 
 	    	while (resultSet.next()) {
-	       
+				String[] temp2 = new String[columns];
 	    		for (int i=1; i<= columns; i++) {
-	    				System.out.print(resultSet.getObject(i)+"\t\t");
+	    				temp2[i-1] = resultSet.getObject(i)+"";
 	    		}
-	    			System.out.println();
+	    			list.add(temp2);
 	    	}
 	    }
 	    catch (SQLException e) {
 	    		e.printStackTrace();
 	    }
+		String[][] setList = new String[list.size()][columns];
+		for(int x = 0; x < list.size(); x++){
+			for(int i = 0; i < columns; i++){
+				setList[x][i] = list.get(x)[i];
+			}
+		}
+		return setList;
+	}
+
+	public void simpleStoreProcedure(String spName) {
+
+		try {
+			statement = connection.createStatement();
+			int total =0;
+			CallableStatement myCallStmt = connection.prepareCall("{call "+spName+"(?)}");
+			myCallStmt.registerOutParameter(1,Types.BIGINT);
+			myCallStmt.execute();
+			total = myCallStmt.getInt(1);
+			System.out.println("Average pricing "+ total);
+
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

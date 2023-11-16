@@ -1,9 +1,25 @@
+import javax.swing.JOptionPane;
 
 public final class Menu {
+        private static Database data = new Database();
+
     	public static void main(String[] args){
             System.out.println("Hello");
-            Database data = new Database();
-            data.simpleQuery("select distinct make_name from Car;");
-            
+            simpleUI();
+        }
+
+        public static void simpleUI(){
+                String input = JOptionPane.showInputDialog("Enter command for data");
+                System.out.println("Starting commands");
+                String[][] temp = data.simpleQuery(input);
+                String s = "";
+                for(String[] i : temp){
+                        for(String x : i){
+                                s += x + "\t\t";
+                        }
+                        s+= "\n";
+                }
+                JOptionPane.showMessageDialog(null, s);
+                System.out.println("Ending commands");        
         }
 }
