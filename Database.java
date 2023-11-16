@@ -107,4 +107,8 @@ public class Database {
 		}
 	}
 
+	public String[][] distinctData(String table, String want){
+		return query("select distinct " + want + " from " + table);
+	}
+
 }

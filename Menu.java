@@ -11,7 +11,7 @@ public final class Menu {
         public static void simpleUI(){
                 String input = JOptionPane.showInputDialog("Enter command for data");
                 System.out.println("Starting commands");
-                String[][] temp = data.query(input);
+                String[][] temp = data.distinctData("Manufacture", "make_name");
                 String s = "";
                 for(String[] i : temp){
                         for(String x : i){
