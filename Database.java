@@ -54,7 +54,7 @@ public class Database {
 	    }
 	}
 
-    public String[][] simpleQuery(String sqlQuery) {
+    public String[][] query(String sqlQuery) {
 		ArrayList<String[]> list = new ArrayList<String[]>();
 		int columns = 0;
 	    try {

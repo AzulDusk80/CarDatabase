@@ -11,7 +11,7 @@ public final class Menu {
         public static void simpleUI(){
                 String input = JOptionPane.showInputDialog("Enter command for data");
                 System.out.println("Starting commands");
-                String[][] temp = data.simpleQuery(input);
+                String[][] temp = data.query(input);
                 String s = "";
                 for(String[] i : temp){
                         for(String x : i){
