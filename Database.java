@@ -111,4 +111,9 @@ public class Database {
 		return query("select distinct " + want + " from " + table);
 	}
 
+	public boolean isUser(String[] account){
+
+		return true;
+	}
+
 }
