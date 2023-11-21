@@ -9,6 +9,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Scanner;
 //hello//helo
+//goodbay
 public class Database {
 
     static String databasePrefix ="";
