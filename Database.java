@@ -27,6 +27,7 @@ public class Database {
         connectData();
     }
 
+	//gets login for the database used in class
     public void getLogin(){
         Scanner input = new Scanner(System.in);
         System.out.println("NetID:");
@@ -55,6 +56,7 @@ public class Database {
 	    }
 	}
 
+	//gives back a table made the sql query
     public String[][] query(String sqlQuery) {
 		ArrayList<String[]> list = new ArrayList<String[]>();
 		int columns = 0;
@@ -91,6 +93,7 @@ public class Database {
 		return setList;
 	}
 
+	//needs updating
 	public void simpleStoreProcedure(String spName) {
 
 		try {
@@ -108,10 +111,12 @@ public class Database {
 		}
 	}
 
+	//for distinct elements
 	public String[][] distinctData(String table, String want){
 		return query("select distinct " + want + " from " + table);
 	}
 
+	//used to check if valid account
 	public boolean isUser(String[] account){
 
 		return true;

@@ -5,9 +5,9 @@ public final class Menu {
         private static UserInterface ui = new UserInterface(data);
 
     	public static void main(String[] args){
-                simpleUI();
         }
 
+        //simple testing
         public static void simpleUI(){
                 String input = JOptionPane.showInputDialog("Enter command for data");
                 System.out.println("Starting commands");
