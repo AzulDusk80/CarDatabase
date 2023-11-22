@@ -2,7 +2,6 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
@@ -16,8 +15,7 @@ import java.awt.event.ActionListener;
 public class UserInterface {
     private static JFrame frame = new JFrame("The Car Database");
     private static JPanel panel = new JPanel();
-    private static String[][] dataset;
-    int count = 0;
+    private static JTable table;
 
     public UserInterface(Database data) {
         String[] logins = new String[2];
@@ -115,9 +113,6 @@ public class UserInterface {
     public void mainPage(String[][] data){
         clear();
 
-        dataset = data;
-        count = 0;
-
         Object[][] dataTable = new Object[data.length][data[0].length + 1];
             for(int i = 0; i < data.length; i++){
                 for(int j = 0; j < data[0].length; j++){
@@ -127,7 +122,7 @@ public class UserInterface {
             }
 
         String[] title = {"a!S", "b", "c","d", "e", "details"};
-        JTable table = new JTable(dataTable, title);
+        table = new JTable(dataTable, title);
         table.getColumnModel().getColumn(data[0].length).setCellRenderer(new ButtonRenderer());
         table.getColumnModel().getColumn(data[0].length).setCellEditor(new ButtonEditor());
         panel.add(new JScrollPane(table));
@@ -155,7 +150,10 @@ public class UserInterface {
             button.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    details(dataset[count][0]);
+                    Object value = table.getValueAt(table.getSelectedRow(), 0);
+                    if (value != null) {
+                        details(value.toString());
+                    }
                 }
             });
         }
