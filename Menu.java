@@ -5,6 +5,7 @@ public final class Menu {
         private static UserInterface ui = new UserInterface(data);
 
     	public static void main(String[] args){
+                ui.start();
         }
 
         //simple testing

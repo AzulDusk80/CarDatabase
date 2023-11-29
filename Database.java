@@ -8,15 +8,14 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Scanner;
-//hello//helo
-//goodbay
+
 public class Database {
 
     static String databasePrefix ="";
-    static String netID =""; // Please enter your netId
-    static final String hostName ="washington.uww.edu"; //140.146.23.39 or washington.uww.edu
+    static String netID =""; 
+    static final String hostName ="washington.uww.edu"; 
     static String databaseURL ="jdbc:mariadb://"+hostName+"/"+databasePrefix;
-    static String password=""; // please enter your own password
+    static String password=""; 
 
     private Connection connection = null;
     private Statement statement = null;
@@ -40,6 +39,7 @@ public class Database {
         databaseURL ="jdbc:mariadb://"+hostName+"/"+databasePrefix;
     }
 
+	//connects to our database using logins
     public void connectData(){
 	  
 	    try {
@@ -56,7 +56,7 @@ public class Database {
 	    }
 	}
 
-	//gives back a table made the sql query
+	//gives back a table made the sql query given to it
     public String[][] query(String sqlQuery) {
 		ArrayList<String[]> list = new ArrayList<String[]>();
 		int columns = 0;
@@ -94,7 +94,7 @@ public class Database {
 	}
 
 	//needs updating
-	public void simpleStoreProcedure(String spName) {
+	public void storeProcedure(String spName) {
 
 		try {
 			statement = connection.createStatement();
@@ -116,7 +116,7 @@ public class Database {
 		return query("select distinct " + want + " from " + table);
 	}
 
-	//used to check if valid account
+	//used to check if valid user account
 	public boolean isUser(String[] account){
 
 		return true;

@@ -16,8 +16,14 @@ public class UserInterface {
     private static JFrame frame = new JFrame("The Car Database");
     private static JPanel panel = new JPanel();
     private static JTable table;
+    private static Database carDatabase;
 
     public UserInterface(Database data) {
+        carDatabase = data;
+    }
+
+    //start from login page
+    public void start(){
         String[] logins = new String[2];
         // Create a JLabel (text label)
         JLabel userLabel = new JLabel("Username:");
@@ -37,7 +43,7 @@ public class UserInterface {
                 logins[0] = username;
                 logins[1] = pass;
                 //check if valid password and username
-                if(data.isUser(logins)){
+                if(carDatabase.isUser(logins)){
                     getSubset();
                 }
             }
@@ -62,7 +68,8 @@ public class UserInterface {
         frame.setVisible(true);
 
     }
-
+    
+    //get the user desiered search
     public void getSubset(){
         clear();
 
@@ -96,20 +103,25 @@ public class UserInterface {
         panel.add(button);
     }
 
+    //searches the information based on one element
     public void simpleSearch(){
-        String[][] data = {{"a", "b", "c", "d", "e"}, {"f", "g", "h", "i", "j"}, {"k", "l", "m", "n", "o"}};
-        mainPage(data);
+        System.out.println("a");
     }
 
+    //searches the information based on multiple elements
     public void complexSearch(){
         System.out.println("b");
     }
 
+    //gets the whole database
     public void fullSearch(){
-        System.out.println("c");
+        System.out.println("Loading...");
+        String[][] data = carDatabase.query("SELECT c.vin,c.model_name,s.dealer_zip,s.city,c.price, m.make_name, c.year, c.has_accidents From Car c, Seller s, Manufacture m WHERE c.idenetification = s.idenetification AND m.make_name = c.make_name");
+        System.out.println("Completed");
+        mainPage(data);
     }
 
-    //will be the main page to display all information
+    //will be the main page to display all information in a table
     public void mainPage(String[][] data){
         clear();
 
@@ -121,13 +133,14 @@ public class UserInterface {
                 dataTable[i][data[0].length] = "details";
             }
 
-        String[] title = {"a!S", "b", "c","d", "e", "details"};
+        String[] title = {"Vin", "Model Name", "Dealer Zip","City", "Price", "Make Name", "Year", "Accidents", "Details"};
         table = new JTable(dataTable, title);
         table.getColumnModel().getColumn(data[0].length).setCellRenderer(new ButtonRenderer());
         table.getColumnModel().getColumn(data[0].length).setCellEditor(new ButtonEditor());
         panel.add(new JScrollPane(table));
     }
 
+    //used to make a table buttons work
     private class ButtonRenderer extends JButton implements TableCellRenderer {
 
         public ButtonRenderer() {
@@ -150,6 +163,7 @@ public class UserInterface {
             button.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    //makes it so the button sends out information from the first column of each row
                     Object value = table.getValueAt(table.getSelectedRow(), 0);
                     if (value != null) {
                         details(value.toString());
@@ -174,7 +188,7 @@ public class UserInterface {
         panel.add(label);
     }
 
-    //clears the panel
+    //clears the panel, allows for new objects
     public void clear(){
         panel.removeAll();
         panel.updateUI();
