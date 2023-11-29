@@ -105,11 +105,13 @@ public class UserInterface {
 
     //searches the information based on one element
     public void simpleSearch(){
+        //NOAH
         System.out.println("a");
     }
 
     //searches the information based on multiple elements
     public void complexSearch(){
+        //NOAH
         System.out.println("b");
     }
 
@@ -183,7 +185,7 @@ public class UserInterface {
     //gets the details on a certain car
     public void details(String vin){
         clear();
-
+        //NOAH
         JLabel label = new JLabel(vin);
         panel.add(label);
     }
