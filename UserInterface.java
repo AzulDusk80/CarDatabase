@@ -32,7 +32,8 @@ public class UserInterface {
         JTextField userTextField = new JTextField(20);
         JPasswordField passPasswordField = new JPasswordField(20);
         // Create a JButton (clickable button)
-        JButton button = new JButton("Enter Username");
+        JButton button = new JButton("Enter");
+        JButton button2 = new JButton("Register");
 
         // Add an ActionListener to the button so we can get the password and username
         button.addActionListener(new ActionListener() {
@@ -49,11 +50,19 @@ public class UserInterface {
             }
         });
 
+        button2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e){
+                userRegister();
+            }    
+        });
+
         panel.add(userLabel);
         panel.add(userTextField);
         panel.add(passLabel);
         panel.add(passPasswordField);
         panel.add(button);
+        panel.add(button2);
 
         // Add the panel to the frame
         frame.add(panel);
@@ -67,6 +76,13 @@ public class UserInterface {
         // Set the window to be visible
         frame.setVisible(true);
 
+    }
+
+    //adds a new user
+    public void userRegister(){
+        clear();
+        JButton addUser = new JButton("Register");
+        panel.add(addUser);
     }
     
     //get the user desiered search

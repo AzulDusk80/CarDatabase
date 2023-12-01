@@ -94,21 +94,22 @@ public class Database {
 	}
 
 	//needs updating
-	public void storeProcedure(String spName) {
+	public String storeProcedure(String spName) {
 
 		try {
 			statement = connection.createStatement();
-			int total =0;
-			CallableStatement myCallStmt = connection.prepareCall("{call "+spName+"(?)}");
-			myCallStmt.registerOutParameter(1,Types.BIGINT);
+			String total = "";
+			CallableStatement myCallStmt = connection.prepareCall("{call "+spName+"}");
+			myCallStmt.registerOutParameter(0,Types.VARCHAR);
 			myCallStmt.execute();
-			total = myCallStmt.getInt(1);
+			total = myCallStmt.getString(0);
 			System.out.println("Average pricing "+ total);
-
+			return total;
 		}
 		catch (SQLException e) {
 			e.printStackTrace();
 		}
+		return null;
 	}
 
 	//for distinct elements
@@ -118,7 +119,7 @@ public class Database {
 
 	//used to check if valid user account
 	public boolean isUser(String[] account){
-
+		storeProcedure("GetPasswordFromUsername(\"" + account[0] + "\")");
 		return true;
 	}
 
