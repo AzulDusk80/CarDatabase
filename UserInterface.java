@@ -28,6 +28,7 @@ public class UserInterface {
         // Create a JLabel (text label)
         JLabel userLabel = new JLabel("Username:");
         JLabel passLabel = new JLabel("Password:");
+        JLabel errorRes = new JLabel("The account is not valid");
 
         JTextField userTextField = new JTextField(20);
         JPasswordField passPasswordField = new JPasswordField(20);
@@ -46,6 +47,9 @@ public class UserInterface {
                 //check if valid password and username
                 if(carDatabase.isUser(logins)){
                     getSubset();
+                }
+                else{
+                    panel.add(errorRes);
                 }
             }
         });
@@ -81,7 +85,42 @@ public class UserInterface {
     //adds a new user
     public void userRegister(){
         clear();
+        String[] account = new String[4];
+        JLabel userLabel = new JLabel("Username:");
+        JLabel passLabel = new JLabel("Password:");
+        JLabel addressLabel = new JLabel("Address:");
+        JLabel phoneLabel = new JLabel("Phone Number:");
+        JLabel errorRes = new JLabel("The account could not be registered");
+
+        JTextField userTextField = new JTextField(20);
+        JTextField passTextField = new JTextField(20);
+        JTextField addressTextField = new JTextField(20);
+        JTextField phoneTextField = new JTextField(20);
+
         JButton addUser = new JButton("Register");
+        addUser.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e){
+                account[0] = userTextField.getText();
+                account[1] = passTextField.getText();
+                account[2] = addressTextField.getText();
+                account[3] = phoneTextField.getText();
+                if(!carDatabase.isUsed(account[0])){
+                    carDatabase.registerUser(account);
+                }
+                else
+                    panel.add(errorRes);
+            }    
+        });
+
+        panel.add(userLabel);
+        panel.add(userTextField);
+        panel.add(passLabel);
+        panel.add(passTextField);
+        panel.add(addressLabel);
+        panel.add(addressTextField);
+        panel.add(phoneLabel);
+        panel.add(phoneTextField);
         panel.add(addUser);
     }
     
@@ -134,7 +173,7 @@ public class UserInterface {
     //gets the whole database
     public void fullSearch(){
         System.out.println("Loading...");
-        String[][] data = carDatabase.query("SELECT c.vin,c.model_name,s.dealer_zip,s.city,c.price, m.make_name, c.year, c.has_accidents From Car c, Seller s, Manufacture m WHERE c.idenetification = s.idenetification AND m.make_name = c.make_name");
+        String[][] data = carDatabase.sqlCommand("SELECT c.vin,c.model_name,s.dealer_zip,s.city,c.price, m.make_name, c.year, c.has_accidents From Car c, Seller s, Manufacture m WHERE c.idenetification = s.idenetification AND m.make_name = c.make_name");
         System.out.println("Completed");
         mainPage(data);
     }

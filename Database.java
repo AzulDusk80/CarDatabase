@@ -1,11 +1,9 @@
-import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -56,8 +54,8 @@ public class Database {
 	    }
 	}
 
-	//gives back a table made the sql query given to it
-    public String[][] query(String sqlQuery) {
+	//gives back a table made with the sql command given to it
+    public String[][] sqlCommand(String sqlQuery) {
 		ArrayList<String[]> list = new ArrayList<String[]>();
 		int columns = 0;
 	    try {
@@ -93,34 +91,45 @@ public class Database {
 		return setList;
 	}
 
-	//needs updating
-	public String storeProcedure(String spName) {
-
-		try {
-			statement = connection.createStatement();
-			String total = "";
-			CallableStatement myCallStmt = connection.prepareCall("{call "+spName+"}");
-			myCallStmt.registerOutParameter(0,Types.VARCHAR);
-			myCallStmt.execute();
-			total = myCallStmt.getString(0);
-			System.out.println("Average pricing "+ total);
-			return total;
-		}
-		catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
 	//for distinct elements
 	public String[][] distinctData(String table, String want){
-		return query("select distinct " + want + " from " + table);
+		return sqlCommand("select distinct " + want + " from " + table);
 	}
 
 	//used to check if valid user account
 	public boolean isUser(String[] account){
-		storeProcedure("GetPasswordFromUsername(\"" + account[0] + "\")");
-		return true;
+		String[][] s = sqlCommand("call GetPasswordFromUsername(\"" + account[0] + "\")");
+		if(s.length <= 1){
+			return false;
+		}
+		if(s[1][0].equals(account[1])){
+			return true;
+		}
+		return false;
+	}
+
+	public boolean isUsed(String name){
+		String[][] s = sqlCommand("select username from User");
+		for(int i = 0; i < s.length; i++){
+			for(int k = 0; k < s[0].length; k++){
+				if(name.equals(s[i][k]))
+					return true;
+			}
+		}
+		return false;
+	}
+	//add user to database
+	public void registerUser(String[] account){
+		try {
+			statement = connection.createStatement();
+			String inset = "INSERT INTO User VALUES (\"" + account[0] + "\", \"" + account[1] + "\", \"" + account[2] + "\", \"" + account[3] + "\", 0);";
+			System.out.println(inset);
+			statement.executeQuery(inset);
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 }
