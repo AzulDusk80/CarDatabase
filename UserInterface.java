@@ -214,12 +214,12 @@ public class UserInterface {
             }
         });
 
-        Object[][] dataTable = new Object[data.length][data[0].length + 1];
-            for(int i = 0; i < data.length; i++){
+        Object[][] dataTable = new Object[data.length-1][data[0].length + 1];
+            for(int i = 1; i < data.length; i++){
                 for(int j = 0; j < data[0].length; j++){
-                    dataTable[i][j] = data[i][j];
+                    dataTable[i-1][j] = data[i][j];
                 }
-                dataTable[i][data[0].length] = "details";
+                dataTable[i-1][data[0].length] = "details";
             }
 
         String[] title = {"Vin", "Model Name", "Dealer Zip","City", "Price", "Make Name", "Year", "Accidents", "Details"};
@@ -289,6 +289,24 @@ public class UserInterface {
         //delete
             JButton deleteBut = new JButton("Remove Car");
 
+            editBut.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e){
+                    fileCar(vin, 1);
+                }
+             });
+
+             deleteBut.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e){
+                    int reply = JOptionPane.showConfirmDialog(null, "Are You Sure?", "Delete Car Entry", JOptionPane.YES_NO_OPTION);
+                    if(reply == JOptionPane.YES_OPTION){
+                        carDatabase.deleteRow(vin);
+                        getSubset();
+                    }
+                }
+             });
+
             panel.add(editBut);
             panel.add(deleteBut);
         }
@@ -297,6 +315,287 @@ public class UserInterface {
         JLabel label = new JLabel(vin);
         panel.add(goBack);//you can move this where ever you want, just the back button
         panel.add(label);
+    }
+
+    //open ups a file for car information
+	public void fileCar(String vin, int type){
+        clear();
+        //String[][] s = carDatabase.sqlCommand("describe Car");
+        String[][] s = carDatabase.sqlCommand("select * from Car where vin = \"" + vin + "\"");
+
+        JLabel back_legroomlabel = new JLabel("back_legroom");
+        JTextField back_legroomtextField = new JTextField(s[1][1], 20);
+        panel.add(back_legroomlabel);
+        panel.add(back_legroomtextField);
+        JLabel bedlabel = new JLabel("bed");
+        JTextField bedtextField = new JTextField(s[1][2], 20);
+        panel.add(bedlabel);
+        panel.add(bedtextField);
+        JLabel bed_heightlabel = new JLabel("bed_height");
+        JTextField bed_heighttextField = new JTextField(s[1][3], 20);
+        panel.add(bed_heightlabel);
+        panel.add(bed_heighttextField);
+        JLabel bed_lengthlabel = new JLabel("bed_length");
+        JTextField bed_lengthtextField = new JTextField(s[1][4], 20);
+        panel.add(bed_lengthlabel);
+        panel.add(bed_lengthtextField);
+        JLabel body_typelabel = new JLabel("body_type");
+        JTextField body_typetextField = new JTextField(s[1][5], 20);
+        panel.add(body_typelabel);
+        panel.add(body_typetextField);
+        JLabel cabinlabel = new JLabel("cabin");
+        JTextField cabintextField = new JTextField(s[1][6], 20);
+        panel.add(cabinlabel);
+        panel.add(cabintextField);
+        JLabel city_fuel_economylabel = new JLabel("city_fuel_economy");
+        JTextField city_fuel_economytextField = new JTextField(s[1][7], 20);
+        panel.add(city_fuel_economylabel);
+        panel.add(city_fuel_economytextField);
+        JLabel combine_fuel_economylabel = new JLabel("combine_fuel_economy");
+        JTextField combine_fuel_economytextField = new JTextField(s[1][8], 20);
+        panel.add(combine_fuel_economylabel);
+        panel.add(combine_fuel_economytextField);
+        JLabel descriptionlabel = new JLabel("description");
+        JTextField descriptiontextField = new JTextField(s[1][9], 20);
+        panel.add(descriptionlabel);
+        panel.add(descriptiontextField);
+        JLabel engine_cylinderslabel = new JLabel("engine_cylinders");
+        JTextField engine_cylinderstextField = new JTextField(s[1][10], 20);
+        panel.add(engine_cylinderslabel);
+        panel.add(engine_cylinderstextField);
+        JLabel engine_displacementlabel = new JLabel("engine_displacement");
+        JTextField engine_displacementtextField = new JTextField(s[1][11], 20);
+        panel.add(engine_displacementlabel);
+        panel.add(engine_displacementtextField);
+        JLabel engine_typelabel = new JLabel("engine_type");
+        JTextField engine_typetextField = new JTextField(s[1][12], 20);
+        panel.add(engine_typelabel);
+        panel.add(engine_typetextField);
+        JLabel exterior_colorlabel = new JLabel("exterior_color");
+        JTextField exterior_colortextField = new JTextField(s[1][13], 20);
+        panel.add(exterior_colorlabel);
+        panel.add(exterior_colortextField);
+        JLabel fleetlabel = new JLabel("fleet");
+        JTextField fleettextField = new JTextField(s[1][14], 20);
+        panel.add(fleetlabel);
+        panel.add(fleettextField);
+        JLabel frame_damagedlabel = new JLabel("frame_damaged");
+        JTextField frame_damagedtextField = new JTextField(s[1][15], 20);
+        panel.add(frame_damagedlabel);
+        panel.add(frame_damagedtextField);
+        JLabel front_legroomlabel = new JLabel("front_legroom");
+        JTextField front_legroomtextField = new JTextField(s[1][16], 20);
+        panel.add(front_legroomlabel);
+        panel.add(front_legroomtextField);
+        JLabel fuel_tank_volumelabel = new JLabel("fuel_tank_volume");
+        JTextField fuel_tank_volumetextField = new JTextField(s[1][17], 20);
+        panel.add(fuel_tank_volumelabel);
+        panel.add(fuel_tank_volumetextField);
+        JLabel fuel_typelabel = new JLabel("fuel_type");
+        JTextField fuel_typetextField = new JTextField(s[1][18], 20);
+        panel.add(fuel_typelabel);
+        panel.add(fuel_typetextField);
+        JLabel has_accidentslabel = new JLabel("has_accidents");
+        JTextField has_accidentstextField = new JTextField(s[1][19], 20);
+        panel.add(has_accidentslabel);
+        panel.add(has_accidentstextField);
+        JLabel heightlabel = new JLabel("height");
+        JTextField heighttextField = new JTextField(s[1][20], 20);
+        panel.add(heightlabel);
+        panel.add(heighttextField);
+        JLabel highway_fuel_economylabel = new JLabel("highway_fuel_economy");
+        JTextField highway_fuel_economytextField = new JTextField(s[1][21], 20);
+        panel.add(highway_fuel_economylabel);
+        panel.add(highway_fuel_economytextField);
+        JLabel horsepowerlabel = new JLabel("horsepower");
+        JTextField horsepowertextField = new JTextField(s[1][22], 20);
+        panel.add(horsepowerlabel);
+        panel.add(horsepowertextField);
+        JLabel interior_colorlabel = new JLabel("interior_color");
+        JTextField interior_colortextField = new JTextField(s[1][23], 20);
+        panel.add(interior_colorlabel);
+        panel.add(interior_colortextField);
+        JLabel isCablabel = new JLabel("isCab");
+        JTextField isCabtextField = new JTextField(s[1][24], 20);
+        panel.add(isCablabel);
+        panel.add(isCabtextField);
+        JLabel is_certifiedlabel = new JLabel("is_certified");
+        JTextField is_certifiedtextField = new JTextField(s[1][25], 20);
+        panel.add(is_certifiedlabel);
+        panel.add(is_certifiedtextField);
+        JLabel is_cpolabel = new JLabel("is_cpo");
+        JTextField is_cpotextField = new JTextField(s[1][26], 20);
+        panel.add(is_cpolabel);
+        panel.add(is_cpotextField);
+        JLabel is_newlabel = new JLabel("is_new");
+        JTextField is_newtextField = new JTextField(s[1][27], 20);
+        panel.add(is_newlabel);
+        panel.add(is_newtextField);
+        JLabel is_oemcpolabel = new JLabel("is_oemcpo");
+        JTextField is_oemcpotextField = new JTextField(s[1][28], 20);
+        panel.add(is_oemcpolabel);
+        panel.add(is_oemcpotextField);
+        JLabel latitudelabel = new JLabel("latitude");
+        JTextField latitudetextField = new JTextField(s[1][29], 20);
+        panel.add(latitudelabel);
+        panel.add(latitudetextField);
+        JLabel lengthlabel = new JLabel("length");
+        JTextField lengthtextField = new JTextField(s[1][30], 20);
+        panel.add(lengthlabel);
+        panel.add(lengthtextField);
+        JLabel listed_datelabel = new JLabel("listed_date");
+        JTextField listed_datetextField = new JTextField(s[1][31], 20);
+        panel.add(listed_datelabel);
+        panel.add(listed_datetextField);
+        JLabel listing_colorlabel = new JLabel("listing_color");
+        JTextField listing_colortextField = new JTextField(s[1][32], 20);
+        panel.add(listing_colorlabel);
+        panel.add(listing_colortextField);
+        JLabel longitudelabel = new JLabel("longitude");
+        JTextField longitudetextField = new JTextField(s[1][33], 20);
+        panel.add(longitudelabel);
+        panel.add(longitudetextField);
+        JLabel main_picture_urllabel = new JLabel("main_picture_url");
+        JTextField main_picture_urltextField = new JTextField(s[1][34], 20);
+        panel.add(main_picture_urllabel);
+        panel.add(main_picture_urltextField);
+        JLabel major_optionslabel = new JLabel("major_options");
+        JTextField major_optionstextField = new JTextField(s[1][35], 20);
+        panel.add(major_optionslabel);
+        panel.add(major_optionstextField);
+        JLabel maximum_seatinglabel = new JLabel("maximum_seating");
+        JTextField maximum_seatingtextField = new JTextField(s[1][36], 20);
+        panel.add(maximum_seatinglabel);
+        panel.add(maximum_seatingtextField);
+        JLabel mileagelabel = new JLabel("mileage");
+        JTextField mileagetextField = new JTextField(s[1][37], 20);
+        panel.add(mileagelabel);
+        panel.add(mileagetextField);
+        JLabel model_namelabel = new JLabel("model_name");
+        JTextField model_nametextField = new JTextField(s[1][38], 20);
+        panel.add(model_namelabel);
+        panel.add(model_nametextField);
+        JLabel owner_countlabel = new JLabel("owner_count");
+        JTextField owner_counttextField = new JTextField(s[1][39], 20);
+        panel.add(owner_countlabel);
+        panel.add(owner_counttextField);
+        JLabel powerlabel = new JLabel("power");
+        JTextField powertextField = new JTextField(s[1][40], 20);
+        panel.add(powerlabel);
+        panel.add(powertextField);
+        JLabel pricelabel = new JLabel("price");
+        JTextField pricetextField = new JTextField(s[1][41], 20);
+        panel.add(pricelabel);
+        panel.add(pricetextField);
+        JLabel salvagelabel = new JLabel("salvage");
+        JTextField salvagetextField = new JTextField(s[1][42], 20);
+        panel.add(salvagelabel);
+        panel.add(salvagetextField);
+        JLabel savings_amountlabel = new JLabel("savings_amount");
+        JTextField savings_amounttextField = new JTextField(s[1][43], 20);
+        panel.add(savings_amountlabel);
+        panel.add(savings_amounttextField);
+        JLabel sp_idlabel = new JLabel("sp_id");
+        JTextField sp_idtextField = new JTextField(s[1][44], 20);
+        panel.add(sp_idlabel);
+        panel.add(sp_idtextField);
+        JLabel sp_namelabel = new JLabel("sp_name");
+        JTextField sp_nametextField = new JTextField(s[1][45], 20);
+        panel.add(sp_namelabel);
+        panel.add(sp_nametextField);
+        JLabel theft_titlelabel = new JLabel("theft_title");
+        JTextField theft_titletextField = new JTextField(s[1][46], 20);
+        panel.add(theft_titlelabel);
+        panel.add(theft_titletextField);
+        JLabel torquelabel = new JLabel("torque");
+        JTextField torquetextField = new JTextField(s[1][47], 20);
+        panel.add(torquelabel);
+        panel.add(torquetextField);
+        JLabel transmissionlabel = new JLabel("transmission");
+        JTextField transmissiontextField = new JTextField(s[1][48], 20);
+        panel.add(transmissionlabel);
+        panel.add(transmissiontextField);
+        JLabel transmission_displaylabel = new JLabel("transmission_display");
+        JTextField transmission_displaytextField = new JTextField(s[1][49], 20);
+        panel.add(transmission_displaylabel);
+        panel.add(transmission_displaytextField);
+        JLabel trimIdlabel = new JLabel("trimId");
+        JTextField trimIdtextField = new JTextField(s[1][50], 20);
+        panel.add(trimIdlabel);
+        panel.add(trimIdtextField);
+        JLabel trim_namelabel = new JLabel("trim_name");
+        JTextField trim_nametextField = new JTextField(s[1][51], 20);
+        panel.add(trim_namelabel);
+        panel.add(trim_nametextField);
+        JLabel vehicle_damage_categorylabel = new JLabel("vehicle_damage_category");
+        JTextField vehicle_damage_categorytextField = new JTextField(s[1][52], 20);
+        panel.add(vehicle_damage_categorylabel);
+        panel.add(vehicle_damage_categorytextField);
+        JLabel wheel_systemlabel = new JLabel("wheel_system");
+        JTextField wheel_systemtextField = new JTextField(s[1][53], 20);
+        panel.add(wheel_systemlabel);
+        panel.add(wheel_systemtextField);
+        JLabel wheel_system_displaylabel = new JLabel("wheel_system_display");
+        JTextField wheel_system_displaytextField = new JTextField(s[1][54], 20);
+        panel.add(wheel_system_displaylabel);
+        panel.add(wheel_system_displaytextField);
+        JLabel wheelbaselabel = new JLabel("wheelbase");
+        JTextField wheelbasetextField = new JTextField(s[1][55], 20);
+        panel.add(wheelbaselabel);
+        panel.add(wheelbasetextField);
+        JLabel widthlabel = new JLabel("width");
+        JTextField widthtextField = new JTextField(s[1][56], 20);
+        panel.add(widthlabel);
+        panel.add(widthtextField);
+        JLabel yearlabel = new JLabel("year");
+        JTextField yeartextField = new JTextField(s[1][57], 20);
+        panel.add(yearlabel);
+        panel.add(yeartextField);
+        JLabel make_namelabel = new JLabel("make_name");
+        JTextField make_nametextField = new JTextField(s[1][58], 20);
+        panel.add(make_namelabel);
+        panel.add(make_nametextField);
+        JLabel idenetificationlabel = new JLabel("idenetification");
+        JTextField idenetificationtextField = new JTextField(s[1][59], 20);
+        panel.add(idenetificationlabel);
+        panel.add(idenetificationtextField);
+
+        String[] titles = new String[60];
+        for(int i = 0; i < s[0].length; i++){
+            titles[i] = s[0][i];
+        }
+        // for(int i = 0; i < s[0].length; i++){
+            
+        //     System.out.println("JLabel " + s[0][i] + "label = new JLabel(\"" + s[0][i] + "\");");
+        //     System.out.println(s[0][i] + "textField.getText() ,");
+        //     System.out.println("panel.add("+ s[0][i] +"label);");
+        //      System.out.println("panel.add("+ s[0][i] +"textField);");
+       // }
+        //type 0 is for adding
+        
+        //type 1 is for editing
+        if(type == 1){
+            JButton editBut = new JButton("Edit");
+
+            editBut.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e){
+                    String[] data = {vin, back_legroomtextField.getText() ,bedtextField.getText() ,bed_heighttextField.getText() ,bed_lengthtextField.getText() ,body_typetextField.getText() ,cabintextField.getText() ,city_fuel_economytextField.getText() ,combine_fuel_economytextField.getText() ,descriptiontextField.getText() ,engine_cylinderstextField.getText() ,engine_displacementtextField.getText() ,engine_typetextField.getText() ,exterior_colortextField.getText() ,fleettextField.getText() ,frame_damagedtextField.getText() ,front_legroomtextField.getText() ,fuel_tank_volumetextField.getText() ,fuel_typetextField.getText() ,has_accidentstextField.getText() ,heighttextField.getText() ,highway_fuel_economytextField.getText() ,horsepowertextField.getText() ,interior_colortextField.getText() ,isCabtextField.getText() ,is_certifiedtextField.getText() ,is_cpotextField.getText() ,is_newtextField.getText() ,is_oemcpotextField.getText() ,latitudetextField.getText() ,lengthtextField.getText() ,listed_datetextField.getText() ,listing_colortextField.getText() ,longitudetextField.getText() ,main_picture_urltextField.getText() ,major_optionstextField.getText() ,maximum_seatingtextField.getText() ,mileagetextField.getText() ,model_nametextField.getText() ,owner_counttextField.getText() ,powertextField.getText() ,pricetextField.getText() ,salvagetextField.getText() ,savings_amounttextField.getText() ,sp_idtextField.getText() ,sp_nametextField.getText() ,theft_titletextField.getText() ,torquetextField.getText() ,transmissiontextField.getText() ,transmission_displaytextField.getText() ,trimIdtextField.getText() ,trim_nametextField.getText() ,vehicle_damage_categorytextField.getText() ,wheel_systemtextField.getText() ,wheel_system_displaytextField.getText() ,wheelbasetextField.getText() ,widthtextField.getText() ,yeartextField.getText() ,make_nametextField.getText() ,idenetificationtextField.getText()};
+                    if(carDatabase.checkCar(data, titles)){
+                        for (int i = 0; i < data.length; i++) {
+                            if(data[i].equals("false"))
+                                data[i] = "0";
+                            else if(data[i].equals("true"))
+                                data[i] = "1";
+                        }
+                        carDatabase.editCar(data, titles);
+                        details(vin);
+                    }
+                }
+            });
+
+            panel.add(editBut);
+        }
     }
 
     //clears the panel, allows for new objects

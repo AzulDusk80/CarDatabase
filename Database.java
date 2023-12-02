@@ -7,6 +7,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import javax.swing.JOptionPane;
+
 public class Database {
 
     static String databasePrefix ="";
@@ -91,6 +93,17 @@ public class Database {
 		return setList;
 	}
 
+	//no return statement, it will just edit the table
+	public void tableEdit(String sqlQuery){
+		try {
+	    	statement = connection.createStatement();
+	    	resultSet = statement.executeQuery(sqlQuery);
+		}
+	    catch (SQLException e) {
+	    		e.printStackTrace();
+	    }
+	}
+
 	//for distinct elements
 	public String[][] distinctData(String table, String want){
 		return sqlCommand("select distinct " + want + " from " + table);
@@ -135,14 +148,63 @@ public class Database {
 
 	//add user to database
 	public void registerUser(String[] account){
-		try {
-			statement = connection.createStatement();
-			String inset = "INSERT INTO User VALUES (\"" + account[0] + "\", \"" + account[1] + "\", \"" + account[2] + "\", \"" + account[3] + "\", 0);";
-			statement.executeQuery(inset);
+		tableEdit("INSERT INTO User VALUES (\"" + account[0] + "\", \"" + account[1] + "\", \"" + account[2] + "\", \"" + account[3] + "\", 0);");
+	}
+
+	//removes car from table
+    public void deleteRow(String vin){
+		String[][] table = sqlCommand("select c.vin, s.idenetification from Car c, Seller s where c.idenetification = s.idenetification AND c.vin = \"" + vin+ "\" ");
+		tableEdit("DELETE FROM Car WHERE vin = \"" + table[1][0]+ "\" ");
+		tableEdit("DELETE FROM Seller WHERE idenetification = \"" + table[1][1]+ "\" ");
+    }
+
+	//edit car from table
+	public void editCar(String[] car, String[] titles){
+		String s = "UPDATE Car SET ";
+		for (int i = 1; i < car.length; i++) {
+			s += titles[i] + " = \"" +car[i] + "\", "; 
 		}
-		catch (SQLException e) {
-			e.printStackTrace();
+		s = s.substring(0, s.length() - 2);
+		s+= " WHERE vin = \"" +car[0] +"\"";
+		tableEdit(s);
+
+	}
+
+	//add car to table
+	public void addCar(String[] car, String titles){
+
+	}
+
+	//validates car
+	public boolean checkCar(String[] car, String[] titles){
+
+		//int only
+		int[] onlyInt = {7, 11, 21, 22, 37, 39, 41, 43, 44, 57, 59};
+		//boolean only
+		int[] onlyBoo = {14, 15, 19, 24, 25, 26, 27, 28, 42, 46};
+
+		for (int i : onlyInt) {
+			try {
+				int intValue = Integer.parseInt(car[i]);
+			} catch (NumberFormatException e) {
+				JOptionPane.showMessageDialog(null, car[i] + " is not a valid number in " + titles[i], "Error in entered data", JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
 		}
+
+		for (int i : onlyBoo) {
+			if(car[i].equals("true") || car[i].equals("false")){
+			}
+			else{
+				JOptionPane.showMessageDialog(null, car[i] + " is not a valid boolean in " + titles[i], "Error in entered data", JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	public void registerCar(){
 
 	}
 
