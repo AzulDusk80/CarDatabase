@@ -4,9 +4,10 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Scanner;
-
+import java.text.ParseException;
 import javax.swing.JOptionPane;
 
 public class Database {
@@ -158,6 +159,15 @@ public class Database {
 		tableEdit("DELETE FROM Seller WHERE idenetification = \"" + table[1][1]+ "\" ");
     }
 
+	public boolean newCar(String vin){
+		if(vin.trim().isEmpty())
+			return false;
+		String[][] s = sqlCommand("select vin from Car Where vin = \"" + vin + "\"");
+		if(s.length <= 1)
+			return true;
+		return false;
+	}
+
 	//edit car from table
 	public void editCar(String[] car, String[] titles){
 		String s = "UPDATE Car SET ";
@@ -171,8 +181,15 @@ public class Database {
 	}
 
 	//add car to table
-	public void addCar(String[] car, String titles){
-
+	public void addCar(String[] car, String[] titles){
+		String s = "INSERT INTO Car Values ( ";
+		for (int i = 0; i < car.length; i++) {
+			s += "\"" +car[i] + "\", "; 
+		}
+		s = s.substring(0, s.length() - 2);
+		s += ")";
+		//System.out.println(s);
+		tableEdit(s);
 	}
 
 	//validates car
@@ -201,11 +218,19 @@ public class Database {
 			}
 		}
 
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        sdf.setLenient(false);
+
+        try {
+            sdf.parse(car[31]);
+        } catch (ParseException e) {
+			JOptionPane.showMessageDialog(null, car[31] + " is not a valid date in " + titles[31], "Error in entered data", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+		//check valid identification or make
+
 		return true;
-	}
-
-	public void registerCar(){
-
 	}
 
 }

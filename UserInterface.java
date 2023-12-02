@@ -174,8 +174,23 @@ public class UserInterface {
         panel.add(button);
 
         if(permission){
-            JButton regCar = new JButton("Register a New Car");
+            JLabel vinLabel = new JLabel("Vin:");
+            JTextField vinTextField = new JTextField(20);
 
+            JButton regCar = new JButton("Register a New Car");
+            regCar.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e){
+                    if (carDatabase.newCar(vinTextField.getText())) {
+                        fileCar(vinTextField.getText(), 0);
+                    }
+                    else
+                        JOptionPane.showMessageDialog(null, "Not a valid Vin!", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            });
+
+            panel.add(vinLabel);
+            panel.add(vinTextField);
             panel.add(regCar);
         }
     }
@@ -227,7 +242,16 @@ public class UserInterface {
         table.getColumnModel().getColumn(data[0].length).setCellRenderer(new ButtonRenderer());
         table.getColumnModel().getColumn(data[0].length).setCellEditor(new ButtonEditor());
 
+        JButton averBut = new JButton("Average");
+        JButton HighBut = new JButton("Cheapest");
+        JButton LowBut = new JButton("Costly");
+        JLabel priceLabel = new JLabel("");
+
         panel.add(seachLabel);
+        panel.add(averBut);
+        panel.add(HighBut);
+        panel.add(LowBut);
+        panel.add(priceLabel);
         panel.add(goBack);
         panel.add(new JScrollPane(table));
     }
@@ -320,8 +344,16 @@ public class UserInterface {
     //open ups a file for car information
 	public void fileCar(String vin, int type){
         clear();
-        //String[][] s = carDatabase.sqlCommand("describe Car");
+        JLabel vinlabel = new JLabel(vin);
+        panel.add(vinlabel);
         String[][] s = carDatabase.sqlCommand("select * from Car where vin = \"" + vin + "\"");
+        String[] titles = new String[60];
+        for(int i = 0; i < s[0].length; i++){
+            titles[i] = s[0][i];
+        }
+        if (s.length <= 1) {
+            s = new String[2][60];
+        }
 
         JLabel back_legroomlabel = new JLabel("back_legroom");
         JTextField back_legroomtextField = new JTextField(s[1][1], 20);
@@ -560,10 +592,6 @@ public class UserInterface {
         panel.add(idenetificationlabel);
         panel.add(idenetificationtextField);
 
-        String[] titles = new String[60];
-        for(int i = 0; i < s[0].length; i++){
-            titles[i] = s[0][i];
-        }
         // for(int i = 0; i < s[0].length; i++){
             
         //     System.out.println("JLabel " + s[0][i] + "label = new JLabel(\"" + s[0][i] + "\");");
@@ -572,7 +600,35 @@ public class UserInterface {
         //      System.out.println("panel.add("+ s[0][i] +"textField);");
        // }
         //type 0 is for adding
-        
+        if(type == 0){
+            JButton reButton = new JButton("Register");
+            reButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e){
+                    String[] data = {vin, back_legroomtextField.getText() ,bedtextField.getText() ,bed_heighttextField.getText() ,bed_lengthtextField.getText() ,body_typetextField.getText() ,cabintextField.getText() ,city_fuel_economytextField.getText() ,combine_fuel_economytextField.getText() ,descriptiontextField.getText() ,engine_cylinderstextField.getText() ,engine_displacementtextField.getText() ,engine_typetextField.getText() ,exterior_colortextField.getText() ,fleettextField.getText() ,frame_damagedtextField.getText() ,front_legroomtextField.getText() ,fuel_tank_volumetextField.getText() ,fuel_typetextField.getText() ,has_accidentstextField.getText() ,heighttextField.getText() ,highway_fuel_economytextField.getText() ,horsepowertextField.getText() ,interior_colortextField.getText() ,isCabtextField.getText() ,is_certifiedtextField.getText() ,is_cpotextField.getText() ,is_newtextField.getText() ,is_oemcpotextField.getText() ,latitudetextField.getText() ,lengthtextField.getText() ,listed_datetextField.getText() ,listing_colortextField.getText() ,longitudetextField.getText() ,main_picture_urltextField.getText() ,major_optionstextField.getText() ,maximum_seatingtextField.getText() ,mileagetextField.getText() ,model_nametextField.getText() ,owner_counttextField.getText() ,powertextField.getText() ,pricetextField.getText() ,salvagetextField.getText() ,savings_amounttextField.getText() ,sp_idtextField.getText() ,sp_nametextField.getText() ,theft_titletextField.getText() ,torquetextField.getText() ,transmissiontextField.getText() ,transmission_displaytextField.getText() ,trimIdtextField.getText() ,trim_nametextField.getText() ,vehicle_damage_categorytextField.getText() ,wheel_systemtextField.getText() ,wheel_system_displaytextField.getText() ,wheelbasetextField.getText() ,widthtextField.getText() ,yeartextField.getText() ,make_nametextField.getText() ,idenetificationtextField.getText()};
+                    if(carDatabase.checkCar(data, titles)){
+                        for (int i = 0; i < data.length; i++) {
+                            if(data[i].equals("false"))
+                                data[i] = "0";
+                            else if(data[i].equals("true"))
+                                data[i] = "1";
+                        }
+                        carDatabase.addCar(data, titles);
+                        getSubset();
+                    }
+                }
+            });
+            panel.add(reButton);
+
+            JButton goBack = new JButton("Back");
+            goBack.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e){
+                    getSubset();
+                }
+            });
+            panel.add(goBack);
+        }
         //type 1 is for editing
         if(type == 1){
             JButton editBut = new JButton("Edit");
@@ -595,6 +651,16 @@ public class UserInterface {
             });
 
             panel.add(editBut);
+
+            JButton goBack = new JButton("Back");
+            goBack.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e){
+                    details(vin);
+                }
+            });
+            panel.add(goBack);
+
         }
     }
 
