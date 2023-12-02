@@ -108,7 +108,11 @@ public class Database {
 		return false;
 	}
 
+	//check is username is being used
 	public boolean isUsed(String name){
+		if(name == null){
+			return true;
+		}
 		String[][] s = sqlCommand("select username from User");
 		for(int i = 0; i < s.length; i++){
 			for(int k = 0; k < s[0].length; k++){
@@ -118,12 +122,22 @@ public class Database {
 		}
 		return false;
 	}
+
+	//check permission of user
+	public boolean hasPermission(String user){
+		String[][] s = sqlCommand("call GetPermissionsFromUsername(\"" + user + "\")");
+		if(s[1][0].equals("true"))
+			return true;
+		else
+			return false;
+
+	}
+
 	//add user to database
 	public void registerUser(String[] account){
 		try {
 			statement = connection.createStatement();
 			String inset = "INSERT INTO User VALUES (\"" + account[0] + "\", \"" + account[1] + "\", \"" + account[2] + "\", \"" + account[3] + "\", 0);";
-			System.out.println(inset);
 			statement.executeQuery(inset);
 		}
 		catch (SQLException e) {

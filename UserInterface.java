@@ -2,6 +2,7 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
@@ -17,18 +18,35 @@ public class UserInterface {
     private static JPanel panel = new JPanel();
     private static JTable table;
     private static Database carDatabase;
+    private static String[][] data;
+    private static String searchString;
+    private static boolean permission = false;
 
     public UserInterface(Database data) {
         carDatabase = data;
+        JLabel label = new JLabel("Welcome");
+        panel.add(label);
+        // Add the panel to the frame
+        frame.add(panel);
+
+        // Set default close operation (exit when the window is closed)
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        // Set the size of the window
+        frame.setSize(750, 500);
+
+        // Set the window to be visible
+        frame.setVisible(true);
     }
 
     //start from login page
     public void start(){
+        clear();
+
         String[] logins = new String[2];
         // Create a JLabel (text label)
         JLabel userLabel = new JLabel("Username:");
         JLabel passLabel = new JLabel("Password:");
-        JLabel errorRes = new JLabel("The account is not valid");
 
         JTextField userTextField = new JTextField(20);
         JPasswordField passPasswordField = new JPasswordField(20);
@@ -46,10 +64,11 @@ public class UserInterface {
                 logins[1] = pass;
                 //check if valid password and username
                 if(carDatabase.isUser(logins)){
+                    permission = carDatabase.hasPermission(logins[0]);
                     getSubset();
                 }
                 else{
-                    panel.add(errorRes);
+                    JOptionPane.showMessageDialog(null, "Not a valid account!", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -67,19 +86,7 @@ public class UserInterface {
         panel.add(passPasswordField);
         panel.add(button);
         panel.add(button2);
-
-        // Add the panel to the frame
-        frame.add(panel);
-
-        // Set default close operation (exit when the window is closed)
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        // Set the size of the window
-        frame.setSize(750, 500);
-
-        // Set the window to be visible
-        frame.setVisible(true);
-
+        panel.updateUI();
     }
 
     //adds a new user
@@ -90,7 +97,6 @@ public class UserInterface {
         JLabel passLabel = new JLabel("Password:");
         JLabel addressLabel = new JLabel("Address:");
         JLabel phoneLabel = new JLabel("Phone Number:");
-        JLabel errorRes = new JLabel("The account could not be registered");
 
         JTextField userTextField = new JTextField(20);
         JTextField passTextField = new JTextField(20);
@@ -105,12 +111,21 @@ public class UserInterface {
                 account[1] = passTextField.getText();
                 account[2] = addressTextField.getText();
                 account[3] = phoneTextField.getText();
-                if(!carDatabase.isUsed(account[0])){
+                if(!carDatabase.isUsed(account[0]) && account[0] != null){
                     carDatabase.registerUser(account);
+                    start();
                 }
                 else
-                    panel.add(errorRes);
+                    JOptionPane.showMessageDialog(null, "Not a valid account!", "Error", JOptionPane.ERROR_MESSAGE);
             }    
+        });
+
+        JButton goBack = new JButton("Back");
+        goBack.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e){
+                start();
+            }
         });
 
         panel.add(userLabel);
@@ -122,6 +137,7 @@ public class UserInterface {
         panel.add(phoneLabel);
         panel.add(phoneTextField);
         panel.add(addUser);
+        panel.add(goBack);
     }
     
     //get the user desiered search
@@ -156,6 +172,12 @@ public class UserInterface {
         panel.add(simple);
         panel.add(complex);
         panel.add(button);
+
+        if(permission){
+            JButton regCar = new JButton("Register a New Car");
+
+            panel.add(regCar);
+        }
     }
 
     //searches the information based on one element
@@ -173,14 +195,24 @@ public class UserInterface {
     //gets the whole database
     public void fullSearch(){
         System.out.println("Loading...");
-        String[][] data = carDatabase.sqlCommand("SELECT c.vin,c.model_name,s.dealer_zip,s.city,c.price, m.make_name, c.year, c.has_accidents From Car c, Seller s, Manufacture m WHERE c.idenetification = s.idenetification AND m.make_name = c.make_name");
+        String[][] searchData = carDatabase.sqlCommand("SELECT c.vin,c.model_name,s.dealer_zip,s.city,c.price, m.make_name, c.year, c.has_accidents From Car c, Seller s, Manufacture m WHERE c.idenetification = s.idenetification AND m.make_name = c.make_name");
         System.out.println("Completed");
-        mainPage(data);
+        mainPage(searchData, "Full Car Search");
     }
 
     //will be the main page to display all information in a table
-    public void mainPage(String[][] data){
+    public void mainPage(String[][] searchData, String SearchString){
         clear();
+        data = searchData;
+        searchString = SearchString;
+        JLabel seachLabel = new JLabel(SearchString);
+        JButton goBack = new JButton("Back");
+        goBack.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e){
+                getSubset();
+            }
+        });
 
         Object[][] dataTable = new Object[data.length][data[0].length + 1];
             for(int i = 0; i < data.length; i++){
@@ -194,10 +226,12 @@ public class UserInterface {
         table = new JTable(dataTable, title);
         table.getColumnModel().getColumn(data[0].length).setCellRenderer(new ButtonRenderer());
         table.getColumnModel().getColumn(data[0].length).setCellEditor(new ButtonEditor());
+
+        panel.add(seachLabel);
+        panel.add(goBack);
         panel.add(new JScrollPane(table));
     }
-
-    //used to make a table buttons work
+    //used to make a table button possible
     private class ButtonRenderer extends JButton implements TableCellRenderer {
 
         public ButtonRenderer() {
@@ -210,7 +244,7 @@ public class UserInterface {
             return this;
         }
     }
-
+    //used to make a table buttons work
     private class ButtonEditor extends DefaultCellEditor {
         private JButton button;
 
@@ -240,8 +274,28 @@ public class UserInterface {
     //gets the details on a certain car
     public void details(String vin){
         clear();
-        //NOAH
+        //back button
+        JButton goBack = new JButton("Back");
+        goBack.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e){
+                mainPage(data, searchString);
+            }
+        });
+        //gives people with the permission to edit or delete
+        if(permission){
+        //edit data
+            JButton editBut = new JButton("Edit");
+        //delete
+            JButton deleteBut = new JButton("Remove Car");
+
+            panel.add(editBut);
+            panel.add(deleteBut);
+        }
+
+        //NOAH add details
         JLabel label = new JLabel(vin);
+        panel.add(goBack);//you can move this where ever you want, just the back button
         panel.add(label);
     }
 
