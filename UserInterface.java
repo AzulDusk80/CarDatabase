@@ -1,17 +1,14 @@
-import javax.swing.DefaultCellEditor;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
+
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class UserInterface {
     private static JFrame frame = new JFrame("The Car Database");
@@ -21,6 +18,9 @@ public class UserInterface {
     private static String[][] data;
     private static String searchString;
     private static boolean permission = false;
+    private static String[] logins = new String[2];
+    private static JTextArea resultArea = new JTextArea(10, 40);
+    
 
     public UserInterface(Database data) {
         carDatabase = data;
@@ -43,7 +43,6 @@ public class UserInterface {
     public void start(){
         clear();
 
-        String[] logins = new String[2];
         // Create a JLabel (text label)
         JLabel userLabel = new JLabel("Username:");
         JLabel passLabel = new JLabel("Password:");
@@ -151,7 +150,7 @@ public class UserInterface {
         simple.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                simpleSearch();
+                simpleSearchPageOptions();
             }
         });
 
@@ -180,11 +179,106 @@ public class UserInterface {
         }
     }
 
+    public void simpleSearchPageOptions(){
+        clear();
+
+        JButton sellerCategoryButton = new JButton("Search Seller");
+        JButton carCategoryButton = new JButton("Search Car");
+        JButton manufactureCategoryButton = new JButton("Search Manufacture");
+        sellerCategoryButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String category = "Seller";
+                simpleSearchPage(category);
+            }
+        });
+
+        carCategoryButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String category = "Car";
+                simpleSearchPage(category);
+            }
+        });
+
+        manufactureCategoryButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String category = "Manufacture";
+                simpleSearchPage(category);
+            }
+        });
+        panel.add(sellerCategoryButton);
+        panel.add(carCategoryButton);
+        panel.add(manufactureCategoryButton);
+    }
+
+    public void simpleSearchPage(String category){
+        clear();
+        //GUI components
+        JTextField searchField = new JTextField(20);
+        JButton searchButton = new JButton("Search");
+
+        //Add components to frame
+        panel.add(new JLabel("Enter Search Keyword:"));
+        panel.add(searchField);
+        panel.add(searchButton);
+        panel.add(new JScrollPane(resultArea));
+
+        searchButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String keyword = searchField.getText().trim();
+                simpleSearch(category, keyword, logins[0], logins[1], Database.databaseURL);
+            }
+        });
+        
+    }
+
     //searches the information based on one element
-    public void simpleSearch(){
+    public void simpleSearch(String category, String keyword, String user, String pass, String url){
         //NOAH
         System.out.println("a");
+        String prefix;
+        String column;
+        if ("Seller".equals(category)) {
+            prefix = "s.";
+            column = "Seller s";
+
+        } else if ("Car".equals(category)) {
+            prefix = "c.";
+            column = "Car c";
+
+        } else if ("Manufacture".equals(category)) {
+            prefix = "m.";
+            column = "Manufacture m";
+        } else {
+            return;
+        }
+        try (Connection connection = DriverManager.getConnection(url, user, pass)) {
+            //SQL query
+            String query = "SELECT * FROM " + column + " WHERE " + prefix + "column_name LIKE ?";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setString(1, "%" + keyword + "%");
+                ResultSet resultSet = statement.executeQuery();
+
+                // Display the results in the text area
+                resultArea.setText("");
+                while (resultSet.next()) {
+                    // Customize this part based on your table structure
+                    String result = resultSet.getString("column_name1") + "\t"
+                            + resultSet.getString("column_name2") + "\t"
+                            + resultSet.getString("column_name3") + "\n";
+                    resultArea.append(result);
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            resultArea.setText("Error occurred while searching the database.");
+        }
+    
     }
+    
 
     //searches the information based on multiple elements
     public void complexSearch(){
