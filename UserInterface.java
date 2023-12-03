@@ -9,6 +9,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,7 @@ public class UserInterface {
     private String databaseURL = Database.databaseURL;
     private String username = Database.netID;
     private String password = Database.password;
+    private JLabel resultLabel;
     
 
     public UserInterface(Database data) {
@@ -293,7 +295,8 @@ public class UserInterface {
 
         public void displayComplexSearch(){
         clear();
-        // Create GUI components
+
+        //GUI components
         searchField = new JTextField(20);
         tableComboBox = new JComboBox<>(getTables());
         columnList = new JList<>(getColumns(tableComboBox.getSelectedItem().toString()));
@@ -309,7 +312,7 @@ public class UserInterface {
         panel.add(searchButton);
         panel.add(new JScrollPane(resultArea));
 
-        // Set up action listeners
+        //Action listeners
         tableComboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -396,9 +399,18 @@ public class UserInterface {
                 }
 
                 ResultSet resultSet = statement.executeQuery();
-
-                // Process the result set and display in resultArea
                 resultArea.setText("");
+
+                //Display column names above the data
+                ResultSetMetaData metaData = resultSet.getMetaData();
+                int columnCount = metaData.getColumnCount();
+                StringBuilder columnHeader = new StringBuilder();
+                for (int i = 1; i <= columnCount; i++) {
+                    columnHeader.append(metaData.getColumnName(i)).append("\t");
+                }
+                resultArea.append(columnHeader.toString().trim() + "\n");
+
+                //Process the result and display in resultArea
                 while (resultSet.next()) {
                     StringBuilder result = new StringBuilder();
                     for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
@@ -406,6 +418,8 @@ public class UserInterface {
                     }
                     resultArea.append(result.toString().trim() + "\n");
                 }
+
+                
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -413,11 +427,6 @@ public class UserInterface {
         }
     }
 
-    //searches the information based on multiple elements
-    public void complexSearch(){
-        //NOAH
-        System.out.println("b");
-    }
 
     //gets the whole database
     public void fullSearch(){
