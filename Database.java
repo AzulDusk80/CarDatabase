@@ -202,7 +202,7 @@ public class Database {
 
 		for (int i : onlyInt) {
 			try {
-				int intValue = Integer.parseInt(car[i]);
+				float intValue = Float.parseFloat(car[i]);
 			} catch (NumberFormatException e) {
 				JOptionPane.showMessageDialog(null, car[i] + " is not a valid number in " + titles[i], "Error in entered data", JOptionPane.ERROR_MESSAGE);
 				return false;
@@ -231,6 +231,49 @@ public class Database {
 		//check valid identification or make
 
 		return true;
+	}
+
+	public float priceCheck(String s[][], int type){
+		if(type == 0){
+			int size = s.length - 1;
+			float price = 0;
+			for(int i = 1; i < s.length; i++){
+				try {
+				price += Float.parseFloat(s[i][4].trim());
+				} catch (NumberFormatException e) {
+					System.out.println(s[i][4]);
+				}
+			}
+			return price/size;
+		}
+		else if(type == 1){
+			float price = 0;
+			for(int i = 1; i < s.length; i++){
+				try {
+					if (price < Float.parseFloat(s[i][4])) {
+						price = Float.parseFloat(s[i][4]);
+					}
+				} catch (NumberFormatException e) {
+					System.out.println(s[i][4]);
+				}
+			}
+			return price;
+		}
+		else if(type == 2){
+			float price = Float.MAX_VALUE;
+			for(int i = 1; i < s.length; i++){
+				try {
+					if (price > Float.parseFloat(s[i][4])) {
+						price = Float.parseFloat(s[i][4]);
+					}
+				} catch (NumberFormatException e) {
+					System.out.println(s[i][4]);
+				}
+			}
+			return price;
+		}
+		return -1;
+
 	}
 
 }

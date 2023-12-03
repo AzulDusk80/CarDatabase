@@ -33,7 +33,7 @@ public class UserInterface {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // Set the size of the window
-        frame.setSize(750, 500);
+        frame.setSize(1500, 1000);
 
         // Set the window to be visible
         frame.setVisible(true);
@@ -246,6 +246,30 @@ public class UserInterface {
         JButton HighBut = new JButton("Cheapest");
         JButton LowBut = new JButton("Costly");
         JLabel priceLabel = new JLabel("");
+
+        averBut.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e){
+                float price = carDatabase.priceCheck(data, 0);
+                priceLabel.setText("Average: " + price);
+
+            }
+        });
+        LowBut.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e){
+                float price = carDatabase.priceCheck(data, 1);
+                priceLabel.setText("Lowest: " + price);
+
+            }
+        });
+        HighBut.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e){
+                float price = carDatabase.priceCheck(data, 2);
+                priceLabel.setText("Highest: " + price);
+            }
+        });
 
         panel.add(seachLabel);
         panel.add(averBut);
