@@ -5,10 +5,13 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UserInterface {
     private static JFrame frame = new JFrame("The Car Database");
@@ -19,7 +22,13 @@ public class UserInterface {
     private static String searchString;
     private static boolean permission = false;
     private static String[] logins = new String[2];
-    private static JTextArea resultArea = new JTextArea(10, 40);
+    private JTextField searchField;
+    private JComboBox<String> tableComboBox;
+    private JList<String> columnList;
+    private JTextArea resultArea;
+    private String databaseURL = Database.databaseURL;
+    private String username = Database.netID;
+    private String password = Database.password;
     
 
     public UserInterface(Database data) {
@@ -157,7 +166,7 @@ public class UserInterface {
         complex.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                complexSearch();
+                displayComplexSearch();
             }
         });
 
@@ -244,14 +253,18 @@ public class UserInterface {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String keyword = searchField.getText().trim();
-                simpleSearch(category, keyword, logins[0], logins[1], Database.databaseURL);
+                simpleSearch(category, keyword);
             }
         });
         
     }
 
+    
+
+    
+
     //searches the information based on one element
-    public void simpleSearch(String category, String keyword, String user, String pass, String url){
+    public void simpleSearch(String category, String keyword){
         //NOAH
         System.out.println("a");
         String prefix;
@@ -270,30 +283,135 @@ public class UserInterface {
         } else {
             return;
         }
-        try (Connection connection = DriverManager.getConnection(url, user, pass)) {
+        
             //SQL query
-            String query = "SELECT * FROM " + column + " WHERE " + prefix + "column_name LIKE ?";
-            try (PreparedStatement statement = connection.prepareStatement(query)) {
-                statement.setString(1, "%" + keyword + "%");
-                ResultSet resultSet = statement.executeQuery();
+            
+            }
+           
+    
+    
 
-                // Display the results in the text area
-                resultArea.setText("");
-                while (resultSet.next()) {
-                    // Customize this part based on your table structure
-                    String result = resultSet.getString("column_name1") + "\t"
-                            + resultSet.getString("column_name2") + "\t"
-                            + resultSet.getString("column_name3") + "\n";
-                    resultArea.append(result);
+        public void displayComplexSearch(){
+        clear();
+        // Create GUI components
+        searchField = new JTextField(20);
+        tableComboBox = new JComboBox<>(getTables());
+        columnList = new JList<>(getColumns(tableComboBox.getSelectedItem().toString()));
+        JButton searchButton = new JButton("Search");
+        resultArea = new JTextArea(10, 40);
+        
+        panel.add(new JLabel("Select Table:"));
+        panel.add(tableComboBox);
+        panel.add(new JLabel("Select Columns (Ctrl+Click to select multiple):"));
+        panel.add(new JScrollPane(columnList));
+        panel.add(new JLabel("Enter Search Keyword:"));
+        panel.add(searchField);
+        panel.add(searchButton);
+        panel.add(new JScrollPane(resultArea));
+
+        // Set up action listeners
+        tableComboBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                updateColumnList();
+            }
+        });
+
+        searchButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String tableName = tableComboBox.getSelectedItem().toString();
+                String[] columns = columnList.getSelectedValuesList().toArray(new String[0]);
+                String keyword = searchField.getText().trim();
+                dynamicSearch(tableName, columns, keyword);
+            }
+        });
+    }
+
+    private void updateColumnList() {
+        String selectedTable = tableComboBox.getSelectedItem().toString();
+        columnList.setListData(getColumns(selectedTable));
+    }
+
+    private String[] getTables() {
+        try (Connection connection = DriverManager.getConnection(databaseURL, username, password)) {
+            DatabaseMetaData metaData = connection.getMetaData();
+            ResultSet tables = metaData.getTables(null, null, "%", null);
+
+            List<String> tableNames = new ArrayList<>();
+            while (tables.next()) {
+                tableNames.add(tables.getString("TABLE_NAME"));
+            }
+
+            return tableNames.toArray(new String[0]);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new String[0];
+        }
+    }
+
+    private String[] getColumns(String tableName) {
+        try (Connection connection = DriverManager.getConnection(databaseURL, username, password)) {
+            DatabaseMetaData metaData = connection.getMetaData();
+            ResultSet columns = metaData.getColumns(null, null, tableName, null);
+
+            List<String> columnNames = new ArrayList<>();
+            while (columns.next()) {
+                columnNames.add(columns.getString("COLUMN_NAME"));
+            }
+
+            return columnNames.toArray(new String[0]);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new String[0];
+        }
+    }
+
+    private void dynamicSearch(String tableName, String[] columns, String keyword) {
+        try (Connection connection = DriverManager.getConnection(databaseURL, username, password)) {
+            StringBuilder queryBuilder = new StringBuilder("SELECT ");
+            if (columns.length == 0) {
+                queryBuilder.append("*");
+            } else {
+                for (int i = 0; i < columns.length; i++) {
+                    queryBuilder.append(columns[i]);
+                    if (i < columns.length - 1) {
+                        queryBuilder.append(", ");
+                    }
                 }
             }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
+            queryBuilder.append(" FROM ").append(tableName).append(" WHERE ");
+
+            for (int i = 0; i < columns.length; i++) {
+                queryBuilder.append(columns[i]).append(" LIKE ?");
+
+                if (i < columns.length - 1) {
+                    queryBuilder.append(" OR ");
+                }
+            }
+
+            try (PreparedStatement statement = connection.prepareStatement(queryBuilder.toString())) {
+                for (int i = 0; i < columns.length; i++) {
+                    statement.setString(i + 1, "%" + keyword + "%");
+                }
+
+                ResultSet resultSet = statement.executeQuery();
+
+                // Process the result set and display in resultArea
+                resultArea.setText("");
+                while (resultSet.next()) {
+                    StringBuilder result = new StringBuilder();
+                    for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
+                        result.append(resultSet.getString(i)).append("\t");
+                    }
+                    resultArea.append(result.toString().trim() + "\n");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
             resultArea.setText("Error occurred while searching the database.");
         }
-    
     }
-    
 
     //searches the information based on multiple elements
     public void complexSearch(){
