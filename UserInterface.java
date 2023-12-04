@@ -600,11 +600,19 @@ public class UserInterface {
             panel.add(editBut);
             panel.add(deleteBut);
         }
+        String[][] carData = carDatabase.sqlCommand("SELECT * FROM Car WHERE vin = \"" + vin + "\"");
+        String[] columnNames = carData[0];
+        String[] rowData = carData.length > 1 ? carData[1] : new String[columnNames.length];
 
-        //NOAH add details
-        JLabel label = new JLabel(vin);
-        panel.add(goBack);//you can move this where ever you want, just the back button
-        panel.add(label);
+        for (int i = 0; i < columnNames.length; i++) {
+            JLabel label = new JLabel(columnNames[i]);
+            JTextField textField = new JTextField(rowData[i], 20);
+        
+            panel.add(label);
+            panel.add(textField);
+        }
+    
+        panel.add(goBack);
     }
 
     //open ups a file for car information
@@ -926,6 +934,8 @@ public class UserInterface {
                 }
             });
             panel.add(goBack);
+
+            
 
         }
     }
