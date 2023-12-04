@@ -211,7 +211,7 @@ public class UserInterface {
     public void displaySimpleSearch() {
         clear();
     
-        // GUI components
+        //GUI components
         searchField = new JTextField(20);
         tableComboBox = new JComboBox<>(getTables());
         columnComboBox = new JComboBox<>(getColumns(tableComboBox.getSelectedItem().toString()));  
@@ -261,13 +261,8 @@ public class UserInterface {
         columnComboBox.setModel(new DefaultComboBoxModel<>(getColumns(selectedTable)));
     }
 
-    
-
-    
-
     //searches the information based on one element
     public void simpleSearch(String tableName, String columnName, String keyword){
-        //NOAH
         try (Connection connection = DriverManager.getConnection(databaseURL, username, password)) {
             String query = "SELECT * FROM " + tableName + " WHERE " + columnName + " LIKE ?";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
@@ -275,10 +270,10 @@ public class UserInterface {
     
                 ResultSet resultSet = statement.executeQuery();
     
-                // Process the result set and display in resultArea
+                //Process the result set and display in resultArea
                 resultArea.setText("");
     
-                // Display column names above the result area
+                //Display column names above the result area
                 ResultSetMetaData metaData = resultSet.getMetaData();
                 int columnCount = metaData.getColumnCount();
                 StringBuilder columnHeader = new StringBuilder();
@@ -287,7 +282,7 @@ public class UserInterface {
                 }
                 resultArea.append(columnHeader.toString().trim() + "\n");
     
-                // Display the actual results
+                //Display the actual results
                 while (resultSet.next()) {
                     StringBuilder result = new StringBuilder();
                     for (int i = 1; i <= columnCount; i++) {
@@ -303,9 +298,6 @@ public class UserInterface {
             
     }
            
-    
-    
-
         public void displayComplexSearch(){
         clear();
 
@@ -344,6 +336,7 @@ public class UserInterface {
                 dynamicSearch(tableName, columns, keyword);
             }
         });
+        
         goBack.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e){
@@ -600,10 +593,12 @@ public class UserInterface {
             panel.add(editBut);
             panel.add(deleteBut);
         }
+        //Query and arrays
         String[][] carData = carDatabase.sqlCommand("SELECT * FROM Car WHERE vin = \"" + vin + "\"");
         String[] columnNames = carData[0];
         String[] rowData = carData.length > 1 ? carData[1] : new String[columnNames.length];
 
+        //Loop to add all the data and labels
         for (int i = 0; i < columnNames.length; i++) {
             JLabel label = new JLabel(columnNames[i]);
             JTextField textField = new JTextField(rowData[i], 20);
