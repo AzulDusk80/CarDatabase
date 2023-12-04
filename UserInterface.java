@@ -26,6 +26,7 @@ public class UserInterface {
     private JTextField searchField;
     private JComboBox<String> tableComboBox;
     private JList<String> columnList;
+    private JComboBox<String> columnComboBox;
     private JTextArea resultArea;
     private String databaseURL = Database.databaseURL;
     private String username = Database.netID;
@@ -161,7 +162,7 @@ public class UserInterface {
         simple.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                simpleSearchPageOptions();
+                displaySimpleSearch();
             }
         });
 
@@ -205,60 +206,59 @@ public class UserInterface {
         }
     }
 
-    public void simpleSearchPageOptions(){
+    
+
+    public void displaySimpleSearch() {
         clear();
-
-        JButton sellerCategoryButton = new JButton("Search Seller");
-        JButton carCategoryButton = new JButton("Search Car");
-        JButton manufactureCategoryButton = new JButton("Search Manufacture");
-        sellerCategoryButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String category = "Seller";
-                simpleSearchPage(category);
-            }
-        });
-
-        carCategoryButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String category = "Car";
-                simpleSearchPage(category);
-            }
-        });
-
-        manufactureCategoryButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String category = "Manufacture";
-                simpleSearchPage(category);
-            }
-        });
-        panel.add(sellerCategoryButton);
-        panel.add(carCategoryButton);
-        panel.add(manufactureCategoryButton);
-    }
-
-    public void simpleSearchPage(String category){
-        clear();
-        //GUI components
-        JTextField searchField = new JTextField(20);
+    
+        // GUI components
+        searchField = new JTextField(20);
+        tableComboBox = new JComboBox<>(getTables());
+        columnComboBox = new JComboBox<>(getColumns(tableComboBox.getSelectedItem().toString()));  
         JButton searchButton = new JButton("Search");
-
-        //Add components to frame
+        resultArea = new JTextArea(25, 80);
+        JButton goBack = new JButton("Back");
+        
+        panel.add(goBack);
+        panel.add(new JLabel("Select Table:"));
+        panel.add(tableComboBox);
+        panel.add(new JLabel("Select Column:"));
+        panel.add(new JScrollPane(columnComboBox));  
         panel.add(new JLabel("Enter Search Keyword:"));
         panel.add(searchField);
         panel.add(searchButton);
         panel.add(new JScrollPane(resultArea));
-
+    
+        //Action listeners
+        tableComboBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                updateColumnComboBox();  
+            }
+        });
+    
         searchButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                String tableName = tableComboBox.getSelectedItem().toString();
+                String columnName = columnComboBox.getSelectedItem().toString();  
                 String keyword = searchField.getText().trim();
-                simpleSearch(category, keyword);
+                simpleSearch(tableName, columnName, keyword);
             }
         });
-        
+
+        goBack.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e){
+                getSubset();
+            }
+        });
+    }
+    
+    
+    private void updateColumnComboBox() {
+        String selectedTable = tableComboBox.getSelectedItem().toString();
+        columnComboBox.setModel(new DefaultComboBoxModel<>(getColumns(selectedTable)));
     }
 
     
@@ -266,29 +266,42 @@ public class UserInterface {
     
 
     //searches the information based on one element
-    public void simpleSearch(String category, String keyword){
+    public void simpleSearch(String tableName, String columnName, String keyword){
         //NOAH
-        System.out.println("a");
-        String prefix;
-        String column;
-        if ("Seller".equals(category)) {
-            prefix = "s.";
-            column = "Seller s";
-
-        } else if ("Car".equals(category)) {
-            prefix = "c.";
-            column = "Car c";
-
-        } else if ("Manufacture".equals(category)) {
-            prefix = "m.";
-            column = "Manufacture m";
-        } else {
-            return;
-        }
-        
-            //SQL query
-            
+        try (Connection connection = DriverManager.getConnection(databaseURL, username, password)) {
+            String query = "SELECT * FROM " + tableName + " WHERE " + columnName + " LIKE ?";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setString(1, "%" + keyword + "%");
+    
+                ResultSet resultSet = statement.executeQuery();
+    
+                // Process the result set and display in resultArea
+                resultArea.setText("");
+    
+                // Display column names above the result area
+                ResultSetMetaData metaData = resultSet.getMetaData();
+                int columnCount = metaData.getColumnCount();
+                StringBuilder columnHeader = new StringBuilder();
+                for (int i = 1; i <= columnCount; i++) {
+                    columnHeader.append(metaData.getColumnName(i)).append("\t");
+                }
+                resultArea.append(columnHeader.toString().trim() + "\n");
+    
+                // Display the actual results
+                while (resultSet.next()) {
+                    StringBuilder result = new StringBuilder();
+                    for (int i = 1; i <= columnCount; i++) {
+                        result.append(resultSet.getString(i)).append("\t");
+                    }
+                    resultArea.append(result.toString().trim() + "\n");
+                }
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            resultArea.setText("Error occurred while searching the database.");
+        }
+            
+    }
            
     
     
@@ -301,8 +314,10 @@ public class UserInterface {
         tableComboBox = new JComboBox<>(getTables());
         columnList = new JList<>(getColumns(tableComboBox.getSelectedItem().toString()));
         JButton searchButton = new JButton("Search");
-        resultArea = new JTextArea(10, 40);
+        resultArea = new JTextArea(25, 80);
+        JButton goBack = new JButton("Back");
         
+        panel.add(goBack);
         panel.add(new JLabel("Select Table:"));
         panel.add(tableComboBox);
         panel.add(new JLabel("Select Columns (Ctrl+Click to select multiple):"));
@@ -327,6 +342,12 @@ public class UserInterface {
                 String[] columns = columnList.getSelectedValuesList().toArray(new String[0]);
                 String keyword = searchField.getText().trim();
                 dynamicSearch(tableName, columns, keyword);
+            }
+        });
+        goBack.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e){
+                getSubset();
             }
         });
     }
