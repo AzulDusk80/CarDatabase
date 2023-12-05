@@ -382,6 +382,8 @@ public class UserInterface {
             while (tables.next()) {
                 tableNames.add(tables.getString("TABLE_NAME"));
             }
+            tableNames.remove(tableNames.size() - 1);
+            tableNames.remove(tableNames.size() - 1);
 
             return tableNames.toArray(new String[0]);
         } catch (SQLException e) {
