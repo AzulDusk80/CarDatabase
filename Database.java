@@ -168,6 +168,16 @@ public class Database {
 		return false;
 	}
 
+
+	public boolean validVin(String vin){
+		if(vin.trim().isEmpty())
+			return false;
+		String[][] s = sqlCommand("select vin from Car Where vin = \"" + vin + "\"");
+		if(s.length > 1)
+			return true;
+		return false;
+	}
+
 	//edit car from table
 	public void editCar(String[] car, String[] titles){
 		String s = "UPDATE Car SET ";

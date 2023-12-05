@@ -184,10 +184,26 @@ public class UserInterface {
         panel.add(complex);
         panel.add(button);
 
-        if(permission){
-            JLabel vinLabel = new JLabel("Vin:");
-            JTextField vinTextField = new JTextField(20);
+        JLabel vinLabel = new JLabel("Vin:");
+        JTextField vinTextField = new JTextField(20);
+        JButton findCar = new JButton("Car Search");
+        findCar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e){
+                if (carDatabase.validVin(vinTextField.getText())) {
+                    details(vinTextField.getText(), 1);
+                }
+                else
+                    JOptionPane.showMessageDialog(null, "Not a valid Vin!", "Invalid", JOptionPane.ERROR_MESSAGE);
+            }
+        });
 
+        panel.add(vinLabel);
+        panel.add(vinTextField);
+        panel.add(findCar);
+
+
+        if(permission){
             JButton regCar = new JButton("Register a New Car");
             regCar.addActionListener(new ActionListener() {
                 @Override
@@ -199,11 +215,18 @@ public class UserInterface {
                         JOptionPane.showMessageDialog(null, "Not a valid Vin!", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             });
-
-            panel.add(vinLabel);
-            panel.add(vinTextField);
             panel.add(regCar);
         }
+
+        JButton logout = new JButton("Logout");
+        logout.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e){
+                start();
+            }
+        });
+        panel.add(logout);
+
     }
 
     
@@ -494,7 +517,7 @@ public class UserInterface {
             @Override
             public void actionPerformed(ActionEvent e){
                 float price = carDatabase.priceCheck(data, 1);
-                priceLabel.setText("Lowest: " + price);
+                priceLabel.setText("Highest: " + price);
 
             }
         });
@@ -502,7 +525,7 @@ public class UserInterface {
             @Override
             public void actionPerformed(ActionEvent e){
                 float price = carDatabase.priceCheck(data, 2);
-                priceLabel.setText("Highest: " + price);
+                priceLabel.setText("Lowest: " + price);
             }
         });
 
@@ -540,7 +563,7 @@ public class UserInterface {
                     //makes it so the button sends out information from the first column of each row
                     Object value = table.getValueAt(table.getSelectedRow(), 0);
                     if (value != null) {
-                        details(value.toString());
+                        details(value.toString(), 0);
                     }
                 }
             });
@@ -555,14 +578,19 @@ public class UserInterface {
 
 
     //gets the details on a certain car
-    public void details(String vin){
+    public void details(String vin, int type){
         clear();
         //back button
         JButton goBack = new JButton("Back");
         goBack.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e){
-                mainPage(data, searchString);
+                if(type == 0){
+                    mainPage(data, searchString);
+                }
+                else if (type == 1){
+                    getSubset();
+                }
             }
         });
         //gives people with the permission to edit or delete
@@ -600,8 +628,8 @@ public class UserInterface {
 
         //Loop to add all the data and labels
         for (int i = 0; i < columnNames.length; i++) {
-            JLabel label = new JLabel(columnNames[i]);
-            JTextField textField = new JTextField(rowData[i], 20);
+            JLabel label = new JLabel(columnNames[i] + ": ");
+            JLabel textField = new JLabel(rowData[i] + ". ");
         
             panel.add(label);
             panel.add(textField);
@@ -914,7 +942,7 @@ public class UserInterface {
                                 data[i] = "1";
                         }
                         carDatabase.editCar(data, titles);
-                        details(vin);
+                        details(vin, 0);
                     }
                 }
             });
@@ -925,7 +953,7 @@ public class UserInterface {
             goBack.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e){
-                    details(vin);
+                    details(vin, 0);
                 }
             });
             panel.add(goBack);
