@@ -244,8 +244,32 @@ public class UserInterface {
     public void purchaseList(){
         clear();
 
+        JLabel title = new JLabel("Bookmarks: ");
+        JButton bckButton = new JButton("Back");
+        bckButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e){
+                getSubset();
+            }
+        });
         
+        panel.add(title);
+        String[][] s = carDatabase.sellsToList(user);
+        for (int i = 1; i < s.length; i++) {
+                String vin = carDatabase.vinFromId(s[i][0]);
+                JLabel book = new JLabel("Seller ID: " + s[i][0]);
+                panel.add(book);
+                JButton details = new JButton("Details");
+                details.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e){
+                        details(vin, 1);
+                    }
+                });
+                panel.add(details);
+        }
 
+        panel.add(bckButton);
     }
 
     public void displaySimpleSearch() {

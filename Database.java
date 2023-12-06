@@ -179,7 +179,7 @@ public class Database {
 	}
 
 	public String[][] sellsToList(String user){
-		return sqlCommand("select * from Sells_to where username = \"" + user +"\"");
+		return sqlCommand("select idenetification from Sells_to where username = \"" + user +"\"");
 	}
 
 	public boolean notCopy(String vin, String user){
@@ -205,6 +205,11 @@ public class Database {
 		s+= " WHERE vin = \"" +car[0] +"\"";
 		tableEdit(s);
 
+	}
+
+	public String vinFromId(String id){
+		String[][] s = sqlCommand("call GetVinFromId(" + id + ")");
+		return s[1][0];
 	}
 
 	//add car to table
