@@ -54,6 +54,7 @@ public class UserInterface {
     //start from login page
     public void start(){
         clear();
+        frame.setTitle("The Car Database");
 
         // Create a JLabel (text label)
         JLabel userLabel = new JLabel("Username:");
@@ -206,6 +207,7 @@ public class UserInterface {
 
 
         if(permission){
+            frame.setTitle("Employee: " + user);
             JButton regCar = new JButton("Register a New Car");
             regCar.addActionListener(new ActionListener() {
                 @Override
