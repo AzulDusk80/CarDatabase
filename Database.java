@@ -178,6 +178,23 @@ public class Database {
 		return false;
 	}
 
+	public String[][] sellsToList(String user){
+		return sqlCommand("select * from Sells_to where username = \"" + user +"\"");
+	}
+
+	public boolean notCopy(String vin, String user){
+		String[][] s = sqlCommand("CALL GetIDFromVin(\"" + vin + "\")");
+		String[][] ids = sqlCommand("CALL GetCopiesSells_to(\"" + user + "\", " + s[1][0] + ")");
+		if(ids.length > 1)
+			return false;
+		return true;	
+		}
+
+	public void purchaseCar(String vin, String user){
+		String[][] s = sqlCommand("CALL GetIDFromVin(\"" + vin + "\")");
+		tableEdit("INSERT INTO Sells_to VALUES(" +  s[1][0] + ", \"" + user + "\")");
+	}
+
 	//edit car from table
 	public void editCar(String[] car, String[] titles){
 		String s = "UPDATE Car SET ";

@@ -31,7 +31,7 @@ public class UserInterface {
     private String databaseURL = Database.databaseURL;
     private String username = Database.netID;
     private String password = Database.password;
-    private JLabel resultLabel;
+    private String user;
     
 
     public UserInterface(Database data) {
@@ -76,6 +76,8 @@ public class UserInterface {
                 //check if valid password and username
                 if(carDatabase.isUser(logins)){
                     permission = carDatabase.hasPermission(logins[0]);
+                    user = logins[0];
+                    System.out.println(logins[0]);
                     getSubset();
                 }
                 else{
@@ -217,6 +219,16 @@ public class UserInterface {
             });
             panel.add(regCar);
         }
+        else{
+            JButton userHistory = new JButton("Bookmaked Purchase");
+            userHistory.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e){
+                    purchaseList();
+                }
+            });
+            panel.add(userHistory);
+        }
 
         JButton logout = new JButton("Logout");
         logout.addActionListener(new ActionListener() {
@@ -229,7 +241,12 @@ public class UserInterface {
 
     }
 
-    
+    public void purchaseList(){
+        clear();
+
+        
+
+    }
 
     public void displaySimpleSearch() {
         clear();
@@ -595,6 +612,7 @@ public class UserInterface {
                 }
             }
         });
+        
         //gives people with the permission to edit or delete
         if(permission){
         //edit data
@@ -623,8 +641,20 @@ public class UserInterface {
             panel.add(editBut);
             panel.add(deleteBut);
         }
+        else if(carDatabase.notCopy(vin, user)){
+            JButton buyButton = new JButton("Bookmark Car");
+            buyButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e){
+                    carDatabase.purchaseCar(vin, user);
+                    getSubset();
+                }
+             });
+             panel.add(buyButton);
+        }
+
         //Query and arrays
-        String[][] carData = carDatabase.sqlCommand("SELECT * FROM Car WHERE vin = \"" + vin + "\"");
+        String[][] carData = carDatabase.sqlCommand("CALL GetCarInfo(\"" + vin + "\")");
         String[] columnNames = carData[0];
         String[] rowData = carData.length > 1 ? carData[1] : new String[columnNames.length];
 
