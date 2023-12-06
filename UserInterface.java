@@ -11,8 +11,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class UserInterface {
     private static JFrame frame = new JFrame("The Car Database");
@@ -158,7 +161,8 @@ public class UserInterface {
         clear();
 
         JButton simple = new JButton("Simple Search");
-        JButton complex = new JButton("Specified Search");
+        JButton specified = new JButton("Specified Search");
+        JButton column = new JButton("Column Search");
         JButton button = new JButton("All Search");
 
         simple.addActionListener(new ActionListener() {
@@ -168,10 +172,17 @@ public class UserInterface {
             }
         });
 
-        complex.addActionListener(new ActionListener() {
+        specified.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                displayComplexSearch();
+                displaySpecificSearch();
+            }
+        });
+
+        column.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                displayColumnSearch();
             }
         });
 
@@ -183,7 +194,8 @@ public class UserInterface {
         });
         
         panel.add(simple);
-        panel.add(complex);
+        panel.add(specified);
+        panel.add(column);
         panel.add(button);
 
         JLabel vinLabel = new JLabel("Vin:");
@@ -338,7 +350,7 @@ public class UserInterface {
             
     }
            
-        public void displayComplexSearch(){
+        public void displaySpecificSearch(){
         clear();
 
         //GUI components
@@ -352,7 +364,7 @@ public class UserInterface {
         panel.add(goBack);
         panel.add(new JLabel("Select Table:"));
         panel.add(tableComboBox);
-        panel.add(new JLabel("Select Columns (Ctrl+Click to select multiple):"));
+        panel.add(new JLabel("Select Column(s) (Ctrl+Click to select multiple):"));
         panel.add(new JScrollPane(columnList));
         panel.add(new JLabel("Enter Search Keyword:"));
         panel.add(searchField);
@@ -373,7 +385,7 @@ public class UserInterface {
                 String tableName = tableComboBox.getSelectedItem().toString();
                 String[] columns = columnList.getSelectedValuesList().toArray(new String[0]);
                 String keyword = searchField.getText().trim();
-                dynamicSearch(tableName, columns, keyword);
+                specificSearch(tableName, columns, keyword);
             }
         });
         
@@ -426,7 +438,7 @@ public class UserInterface {
         }
     }
 
-    private void dynamicSearch(String tableName, String[] columns, String keyword) {
+    private void specificSearch(String tableName, String[] columns, String keyword) {
         try (Connection connection = DriverManager.getConnection(databaseURL, username, password)) {
             StringBuilder queryBuilder = new StringBuilder("SELECT ");
             if (columns.length == 0) {
@@ -483,6 +495,141 @@ public class UserInterface {
         }
     }
 
+     public void displayColumnSearch(){
+        clear();
+
+        //GUI components
+        searchField = new JTextField(20);
+        columnList = new JList<>(getAllColumns());
+        JButton searchButton = new JButton("Search");
+        resultArea = new JTextArea(25, 80);
+        JButton goBack = new JButton("Back");
+            
+        panel.add(goBack);
+        panel.add(new JLabel("Select Column(s) (Ctrl+Click to select multiple):"));
+        panel.add(new JScrollPane(columnList));
+        panel.add(new JLabel("Enter Search Keyword:"));
+        panel.add(searchField);
+        panel.add(searchButton);
+        panel.add(new JScrollPane(resultArea));
+
+        //Action listeners
+        searchButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String[] tableNames = {"Car", "Seller", "Manufacture"};
+                String[] columns = columnList.getSelectedValuesList().toArray(new String[0]);
+                String keyword = searchField.getText().trim();
+                columnSearch(tableNames, columns, keyword);
+            }
+        });
+        
+        goBack.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e){
+                getSubset();
+            }
+        });
+    }
+
+    public String[] getAllColumns() {
+        // Fetch columns from all tables
+        List<String> allColumns = new ArrayList<>();
+    
+        String[] tableNames = {"Car", "Seller", "Manufacture"};
+    
+        try (Connection connection = DriverManager.getConnection(databaseURL, username, password)) {
+            for (String tableName : tableNames) {
+                try (Statement statement = connection.createStatement()) {
+                    try (ResultSet resultSet = statement.executeQuery("SELECT * FROM " + tableName + " LIMIT 1")) {
+                        ResultSetMetaData metaData = resultSet.getMetaData();
+                        int columnCount = metaData.getColumnCount();
+    
+                        for (int i = 1; i <= columnCount; i++) {
+                            allColumns.add(metaData.getColumnName(i));
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    
+        return allColumns.toArray(new String[0]);
+    }
+
+    private void columnSearch(String[] tableNames, String[] columns, String keyword) {
+        try (Connection connection = DriverManager.getConnection(databaseURL, username, password)) {
+            resultArea.setText(""); 
+    
+            StringBuilder queryBuilder = new StringBuilder();
+            boolean firstTable = true;
+    
+            for (String tableName : tableNames) {
+                if (!firstTable) {
+                    queryBuilder.append(" UNION ");
+                }
+    
+                queryBuilder.append("SELECT ");
+                if (columns.length == 0) {
+                    queryBuilder.append("*");
+                } else {
+                    for (int i = 0; i < columns.length; i++) {
+                        queryBuilder.append(columns[i]);
+                        if (i < columns.length - 1) {
+                            queryBuilder.append(", ");
+                        }
+                    }
+                }
+    
+                queryBuilder.append(" FROM ").append(tableName).append(" WHERE ");
+    
+                for (int i = 0; i < columns.length; i++) {
+                    queryBuilder.append(columns[i]).append(" LIKE ?");
+    
+                    if (i < columns.length - 1) {
+                        queryBuilder.append(" OR ");
+                    }
+                }
+    
+                firstTable = false;
+            }
+    
+            try (PreparedStatement statement = connection.prepareStatement(queryBuilder.toString())) {
+                for (int i = 0; i < tableNames.length * columns.length; i++) {
+                    statement.setString(i + 1, "%" + keyword + "%");
+                }
+    
+                ResultSet resultSet = statement.executeQuery();
+    
+                // Display results
+                displayColumnResults(resultSet);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            resultArea.setText("Error occurred during column search.");
+        }
+    }
+
+    private void displayColumnResults(ResultSet resultSet) throws SQLException {
+        //Labels
+        ResultSetMetaData metaData = resultSet.getMetaData();
+        int columnCount = metaData.getColumnCount();
+        StringBuilder columnHeader = new StringBuilder();
+        for (int i = 1; i <= columnCount; i++) {
+            columnHeader.append(metaData.getColumnName(i)).append("\t");
+        }
+        resultArea.append(columnHeader.toString().trim() + "\n");
+    
+        //Process and display in resultArea
+        while (resultSet.next()) {
+            StringBuilder result = new StringBuilder();
+            for (int i = 1; i <= columnCount; i++) {
+                result.append(resultSet.getString(i)).append("\t");
+            }
+            resultArea.append(result.toString().trim() + "\n");
+        }
+    }
 
     //gets the whole database
     public void fullSearch(){
