@@ -587,7 +587,7 @@ public class UserInterface {
                     String columnName = metaData.getColumnName(i);
                     String prefix;
     
-                    // Determine the prefix based on the table name
+                    //Determine the prefix based on the table name
                     if ("Car".equals(tableName)) {
                         prefix = "c.";
                     } else if ("Seller".equals(tableName)) {
@@ -595,17 +595,15 @@ public class UserInterface {
                     } else if ("Manufacture".equals(tableName)) {
                         prefix = "m.";
                     } else {
-                        // Handle other cases if needed
                         prefix = "";
                     }
     
-                    // Add the prefixed column name to the list
+                    //Add the prefixed column name to the list
                     columns.add(prefix + columnName);
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            // Handle the exception as needed
         }
     
         return columns.toArray(new String[0]);
@@ -613,10 +611,10 @@ public class UserInterface {
     
     private void columnSearch(String[] tableNames, String[] columns, String keyword) {
         try (Connection connection = DriverManager.getConnection(databaseURL, username, password)) {
-            resultArea.setText("");  
+            resultArea.setText("");
     
             for (String tableName : tableNames) {
-                String[] tableColumns = getColumns(tableName);
+                String[] tableColumns = getColumnsWithPrefix(connection, tableName);
                 if (tableColumns.length == 0) {
                     System.out.println("No columns found for table '" + tableName + "'");
                     continue;
@@ -626,8 +624,17 @@ public class UserInterface {
     
                 StringBuilder queryBuilder = new StringBuilder();
                 queryBuilder.append("SELECT ").append(selectedColumns);
-                queryBuilder.append(" FROM Car c, Seller s, Manufacture m");
-                queryBuilder.append(" WHERE c.idenetification = s.idenetification AND m.make_name = c.make_name AND ");
+                queryBuilder.append(" FROM ").append(tableName).append(" ");
+    
+                if (tableName.equalsIgnoreCase("Car")) {
+                    queryBuilder.append("c");
+                } else if (tableName.equalsIgnoreCase("Seller")) {
+                    queryBuilder.append("s");
+                } else if (tableName.equalsIgnoreCase("Manufacture")) {
+                    queryBuilder.append("m");
+                }
+    
+                queryBuilder.append(" WHERE ");
     
                 for (int i = 0; i < tableColumns.length; i++) {
                     queryBuilder.append(tableColumns[i]).append(" LIKE ?");
@@ -636,11 +643,12 @@ public class UserInterface {
                         queryBuilder.append(" OR ");
                     }
                 }
+    
                 System.out.println(queryBuilder.toString());
+    
                 try (PreparedStatement statement = connection.prepareStatement(queryBuilder.toString())) {
                     for (int i = 0; i < tableColumns.length; i++) {
                         statement.setString(i + 1, "%" + keyword + "%");
-                        
                     }
     
                     try (ResultSet resultSet = statement.executeQuery()) {
@@ -652,10 +660,9 @@ public class UserInterface {
                     resultArea.setText("Error occurred during column search for table '" + tableName + "'. Details: " + e.getMessage());
                 }
             }
-            
+    
         } catch (SQLException e) {
             e.printStackTrace();
-            //resultArea.setText("Error establishing a database connection. Details: " + e.getMessage());
         }
     }
 
