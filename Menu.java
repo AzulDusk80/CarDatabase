@@ -7,6 +7,7 @@ public final class Menu {
     	public static void main(String[] args){
                 ui.start();
         }
+        
 
         //simple testing
         public static void simpleUI(){
