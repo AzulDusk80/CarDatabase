@@ -574,7 +574,7 @@ public class UserInterface {
 
         return allColumns.toArray(new String[0]);
     }
-
+    
     private void columnSearch(String[] tableNames, String[] columns, String keyword) {
         try (Connection connection = DriverManager.getConnection(databaseURL, username, password)) {
             resultArea.setText("");  
@@ -590,8 +590,8 @@ public class UserInterface {
     
                 StringBuilder queryBuilder = new StringBuilder();
                 queryBuilder.append("SELECT ").append(selectedColumns);
-                queryBuilder.append(" FROM ").append(tableName);
-                queryBuilder.append(" WHERE ");
+                queryBuilder.append(" FROM Car c, Seller s, Manufacture m");
+                queryBuilder.append(" WHERE c.idenetification = s.idenetification AND m.make_name = c.make_name AND ");
     
                 for (int i = 0; i < tableColumns.length; i++) {
                     queryBuilder.append(tableColumns[i]).append(" LIKE ?");
@@ -600,10 +600,11 @@ public class UserInterface {
                         queryBuilder.append(" OR ");
                     }
                 }
-    
+                System.out.println(queryBuilder.toString());
                 try (PreparedStatement statement = connection.prepareStatement(queryBuilder.toString())) {
                     for (int i = 0; i < tableColumns.length; i++) {
                         statement.setString(i + 1, "%" + keyword + "%");
+                        
                     }
     
                     try (ResultSet resultSet = statement.executeQuery()) {
@@ -615,10 +616,10 @@ public class UserInterface {
                     resultArea.setText("Error occurred during column search for table '" + tableName + "'. Details: " + e.getMessage());
                 }
             }
-    
+            
         } catch (SQLException e) {
             e.printStackTrace();
-            resultArea.setText("Error establishing a database connection. Details: " + e.getMessage());
+            //resultArea.setText("Error establishing a database connection. Details: " + e.getMessage());
         }
     }
 
