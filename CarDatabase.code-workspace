@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"java.project.referencedLibraries": [
+			"lib/**/*.jar",
+			"c:\\Users\\Jesus Olvera-Lara\\Downloads\\mariadb-java-client-2.6.2.jar",
+			"mariadb-java-client-2.6.2 (1).jar"
+		]
+	}
+}

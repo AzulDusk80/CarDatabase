@@ -644,8 +644,6 @@ public class UserInterface {
                     }
                 }
     
-                System.out.println(queryBuilder.toString());
-    
                 try (PreparedStatement statement = connection.prepareStatement(queryBuilder.toString())) {
                     for (int i = 0; i < tableColumns.length; i++) {
                         statement.setString(i + 1, "%" + keyword + "%");
