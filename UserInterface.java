@@ -565,7 +565,7 @@ public class UserInterface {
 
         try (Connection connection = DriverManager.getConnection(databaseURL, username, password)) {
             for (String tableName : tableNames) {
-                String[] tableColumns = getColumns(tableName);
+                String[] tableColumns = getColumnsWithPrefix(connection, tableName);
                 allColumns.addAll(Arrays.asList(tableColumns));
             }
         } catch (SQLException e) {
@@ -573,6 +573,42 @@ public class UserInterface {
         }
 
         return allColumns.toArray(new String[0]);
+    }
+
+    private String[] getColumnsWithPrefix(Connection connection, String tableName) {
+        List<String> columns = new ArrayList<>();
+    
+        try (Statement statement = connection.createStatement()) {
+            try (ResultSet resultSet = statement.executeQuery("SELECT * FROM " + tableName + " LIMIT 1")) {
+                ResultSetMetaData metaData = resultSet.getMetaData();
+                int columnCount = metaData.getColumnCount();
+    
+                for (int i = 1; i <= columnCount; i++) {
+                    String columnName = metaData.getColumnName(i);
+                    String prefix;
+    
+                    // Determine the prefix based on the table name
+                    if ("Car".equals(tableName)) {
+                        prefix = "c.";
+                    } else if ("Seller".equals(tableName)) {
+                        prefix = "s.";
+                    } else if ("Manufacture".equals(tableName)) {
+                        prefix = "m.";
+                    } else {
+                        // Handle other cases if needed
+                        prefix = "";
+                    }
+    
+                    // Add the prefixed column name to the list
+                    columns.add(prefix + columnName);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle the exception as needed
+        }
+    
+        return columns.toArray(new String[0]);
     }
     
     private void columnSearch(String[] tableNames, String[] columns, String keyword) {
