@@ -13,6 +13,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -524,9 +525,11 @@ public class UserInterface {
      public void displayColumnSearch(){
         clear();
 
+        String[] tableNames = {"Car", "Seller", "Manufacture"};
+
         //GUI components
         searchField = new JTextField(20);
-        columnList = new JList<>(getAllColumns());
+        columnList = new JList<>(getAllColumns(tableNames));
         JButton searchButton = new JButton("Search");
         resultArea = new JTextArea(25, 80);
         JButton goBack = new JButton("Back");
@@ -543,7 +546,6 @@ public class UserInterface {
         searchButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String[] tableNames = {"Car", "Seller", "Manufacture"};
                 String[] columns = columnList.getSelectedValuesList().toArray(new String[0]);
                 String keyword = searchField.getText().trim();
                 columnSearch(tableNames, columns, keyword);
@@ -558,82 +560,65 @@ public class UserInterface {
         });
     }
 
-    public String[] getAllColumns() {
-        // Fetch columns from all tables
+    public String[] getAllColumns(String[] tableNames) {
         List<String> allColumns = new ArrayList<>();
-    
-        String[] tableNames = {"Car", "Seller", "Manufacture"};
-    
+
         try (Connection connection = DriverManager.getConnection(databaseURL, username, password)) {
             for (String tableName : tableNames) {
-                try (Statement statement = connection.createStatement()) {
-                    try (ResultSet resultSet = statement.executeQuery("SELECT * FROM " + tableName + " LIMIT 1")) {
-                        ResultSetMetaData metaData = resultSet.getMetaData();
-                        int columnCount = metaData.getColumnCount();
-    
-                        for (int i = 1; i <= columnCount; i++) {
-                            allColumns.add(metaData.getColumnName(i));
-                        }
-                    }
-                }
+                String[] tableColumns = getColumns(tableName);
+                allColumns.addAll(Arrays.asList(tableColumns));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    
+
         return allColumns.toArray(new String[0]);
     }
 
     private void columnSearch(String[] tableNames, String[] columns, String keyword) {
         try (Connection connection = DriverManager.getConnection(databaseURL, username, password)) {
-            resultArea.setText(""); 
-    
-            StringBuilder queryBuilder = new StringBuilder();
-            boolean firstTable = true;
+            resultArea.setText("");  
     
             for (String tableName : tableNames) {
-                if (!firstTable) {
-                    queryBuilder.append(" UNION ");
+                String[] tableColumns = getColumns(tableName);
+                if (tableColumns.length == 0) {
+                    System.out.println("No columns found for table '" + tableName + "'");
+                    continue;
                 }
     
-                queryBuilder.append("SELECT ");
-                if (columns.length == 0) {
-                    queryBuilder.append("*");
-                } else {
-                    for (int i = 0; i < columns.length; i++) {
-                        queryBuilder.append(columns[i]);
-                        if (i < columns.length - 1) {
-                            queryBuilder.append(", ");
-                        }
-                    }
-                }
+                String selectedColumns = String.join(", ", tableColumns);
     
-                queryBuilder.append(" FROM ").append(tableName).append(" WHERE ");
+                StringBuilder queryBuilder = new StringBuilder();
+                queryBuilder.append("SELECT ").append(selectedColumns);
+                queryBuilder.append(" FROM ").append(tableName);
+                queryBuilder.append(" WHERE ");
     
-                for (int i = 0; i < columns.length; i++) {
-                    queryBuilder.append(columns[i]).append(" LIKE ?");
+                for (int i = 0; i < tableColumns.length; i++) {
+                    queryBuilder.append(tableColumns[i]).append(" LIKE ?");
     
-                    if (i < columns.length - 1) {
+                    if (i < tableColumns.length - 1) {
                         queryBuilder.append(" OR ");
                     }
                 }
     
-                firstTable = false;
-            }
+                try (PreparedStatement statement = connection.prepareStatement(queryBuilder.toString())) {
+                    for (int i = 0; i < tableColumns.length; i++) {
+                        statement.setString(i + 1, "%" + keyword + "%");
+                    }
     
-            try (PreparedStatement statement = connection.prepareStatement(queryBuilder.toString())) {
-                for (int i = 0; i < tableNames.length * columns.length; i++) {
-                    statement.setString(i + 1, "%" + keyword + "%");
+                    try (ResultSet resultSet = statement.executeQuery()) {
+                        displayColumnResults(resultSet);
+                    }
+    
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    resultArea.setText("Error occurred during column search for table '" + tableName + "'. Details: " + e.getMessage());
                 }
-    
-                ResultSet resultSet = statement.executeQuery();
-    
-                // Display results
-                displayColumnResults(resultSet);
             }
+    
         } catch (SQLException e) {
             e.printStackTrace();
-            resultArea.setText("Error occurred during column search.");
+            resultArea.setText("Error establishing a database connection. Details: " + e.getMessage());
         }
     }
 
