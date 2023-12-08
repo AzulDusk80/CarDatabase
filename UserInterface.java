@@ -14,9 +14,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class UserInterface {
     private static JFrame frame = new JFrame("The Car Database");
@@ -488,6 +486,7 @@ public class UserInterface {
                 }
             }
 
+
             try (PreparedStatement statement = connection.prepareStatement(queryBuilder.toString())) {
                 for (int i = 0; i < columns.length; i++) {
                     statement.setString(i + 1, "%" + keyword + "%");
@@ -613,51 +612,58 @@ public class UserInterface {
         try (Connection connection = DriverManager.getConnection(databaseURL, username, password)) {
             resultArea.setText("");
     
-            for (String tableName : tableNames) {
-                String[] tableColumns = getColumnsWithPrefix(connection, tableName);
-                if (tableColumns.length == 0) {
-                    System.out.println("No columns found for table '" + tableName + "'");
-                    continue;
+            
+                // String[] tableColumns = getColumnsWithPrefix(connection, tableName);
+                // if (tableColumns.length == 0) {
+                //     System.out.println("No columns found for table '" + tableName + "'");
+                //     continue;
+                // }
+    
+                String selectedColumns = String.join(", ", columns);
+                String[] tableArray = new String[tableNames.length];
+                for (int i = 0; i < tableArray.length; i++) {
+                    tableArray[i] = tableNames[i] + " " + tableNames[i].substring(0, 1).toLowerCase();
                 }
-    
-                String selectedColumns = String.join(", ", tableColumns);
-    
+                String tableName = String.join(", ", tableArray);
                 StringBuilder queryBuilder = new StringBuilder();
                 queryBuilder.append("SELECT ").append(selectedColumns);
                 queryBuilder.append(" FROM ").append(tableName).append(" ");
     
-                if (tableName.equalsIgnoreCase("Car")) {
-                    queryBuilder.append("c");
-                } else if (tableName.equalsIgnoreCase("Seller")) {
-                    queryBuilder.append("s");
-                } else if (tableName.equalsIgnoreCase("Manufacture")) {
-                    queryBuilder.append("m");
-                }
+                // if (tableName.equalsIgnoreCase("Car")) {
+                //     queryBuilder.append("c");
+                // } else if (tableName.equalsIgnoreCase("Seller")) {
+                //     queryBuilder.append("s");
+                // } else if (tableName.equalsIgnoreCase("Manufacture")) {
+                //     queryBuilder.append("m");
+                // }
     
-                queryBuilder.append(" WHERE ");
+                queryBuilder.append(" WHERE c.idenetification = s.idenetification AND m.make_name = c.make_name AND (");
     
-                for (int i = 0; i < tableColumns.length; i++) {
-                    queryBuilder.append(tableColumns[i]).append(" LIKE ?");
+                for (int i = 0; i < columns.length; i++) {
+                    queryBuilder.append(columns[i]).append(" LIKE ?");
     
-                    if (i < tableColumns.length - 1) {
+                    if (i < columns.length - 1) {
                         queryBuilder.append(" OR ");
                     }
                 }
+
+                queryBuilder.append(")");
     
                 try (PreparedStatement statement = connection.prepareStatement(queryBuilder.toString())) {
-                    for (int i = 0; i < tableColumns.length; i++) {
+                    for (int i = 0; i < columns.length; i++) {
                         statement.setString(i + 1, "%" + keyword + "%");
                     }
-    
+                    System.out.println(queryBuilder);
                     try (ResultSet resultSet = statement.executeQuery()) {
                         displayColumnResults(resultSet);
-                    }
+                    
     
                 } catch (SQLException e) {
                     e.printStackTrace();
                     resultArea.setText("Error occurred during column search for table '" + tableName + "'. Details: " + e.getMessage());
                 }
             }
+            
     
         } catch (SQLException e) {
             e.printStackTrace();
